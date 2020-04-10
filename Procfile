@@ -1,1 +1,1 @@
-Web: gunicorn Random_Forest.wsgi
+web: gunicorn Random_Forest.wsgi --log-file -
