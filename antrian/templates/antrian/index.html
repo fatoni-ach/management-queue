@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block app_css %}
+  
+{% endblock app_css%}
+
+{% block heading %}
+    <h1 class="h3 mb-0 text-gray-800">{{body_judul}}</h1>
+    <a href="{% url 'antrian:create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Tambah Data </a>
+{% endblock heading %}
+
+{% block body %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <div class="row">
+            <h6 class="m-0 font-weight-bold text-primary col-6">Data antrian Rumah Sakit</h6>
+            <hr>
+              <div class="col-sm-6 col-md-6 ">
+                <div class="dataTables_length col-12" id="dataTable_length">
+                  <div class="row">
+                  <label class="mr-2 mt-1" for="dataTable_length">Jenis Pengobatan</label>
+                  <form action="" method="POST">
+                    {% csrf_token %}
+                  <label class="">
+                  <select id="id_jenis_pengobatan_input" title="jenis_pengobatan_input" name="jenis_pengobatan_input" aria-controls="dataTable" class="custom-select custom-select-sm form-control form-control-sm">
+                      <option value="all">All</option>
+                      {% for jenisP in jp %}
+                        {% if jenis_pengobatan_input != "" and jenisP.jenis_pengobatan == jenis_pengobatan_input%}
+                        <option selected="selected" value="{{jenisP.jenis_pengobatan}}">
+                          {{jenisP.jenis_pengobatan}}
+                        </option>
+                        {% else %}
+                        <option value="{{jenisP.jenis_pengobatan}}">
+                          {{jenisP.jenis_pengobatan}}
+                        </option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </label>
+                  <button type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-4">Go</button>
+                  </form>
+                  <label class="mt-1">Total data : {{ pasien.count }}</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+                <tr align="center">
+                <th>No</th>
+                <th>Nama Pasien</th>
+                <th>jenis kelamin</th>
+                <th>umur</th>
+                <th>nama dokter</th>
+                <th>jenis pengobatan</th>
+                <th>waktu mulai</th>
+                <th>waktu berakhir</th>
+                <th>Durasi(second)</th>
+                <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in pasien %}
+                <tr align="center">
+                    <td>{{forloop.counter}}</td>
+                    <td>{{data.nama_pasien}}</td>
+                    <td>{{data.jenis_kelamin}}</td>
+                    <td>{{data.umur}}</td>
+                    <td>{{data.nama_dokter}}</td>
+                    <td>{{data.jenis_pengobatan}}</td>
+                    <td>{{data.waktu_mulai}}</td>
+                    <td>
+                        {% if data.waktu_berakhir == "" %}
+                            <a href="{% url 'antrian:selesai' data.id %}" class="btn btn-success btn-circle btn-sm"><i class="fas fa-check"></i></a>
+                        {% else %}
+                            {{data.waktu_berakhir}}
+                        {% endif %}
+                    </td>
+                    <td>{{data.durasi_pengobatan}}</td>
+                    <td>
+                        <a href="{% url 'antrian:update' data.id %}" class="btn btn-user btn-warning btn-block">Update</a>
+                        <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            
+                              <!-- Counter - Alerts -->
+                              <button class="btn btn-user btn-danger btn-block">Hapus</button>
+                            </a>
+                            <!-- Dropdown - Alerts -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="alertsDropdown">
+                              <h6 class="dropdown-header">
+                                Yakin ingin menghapus ?
+                              </h6>
+                              <a class="dropdown-item d-flex align-items-center bg-" href="{% url 'antrian:delete' data.id %}">
+                                <div class="mr-3">
+                                </div>
+                                <div>
+                                  <div class="medium">Ya</div>
+                                </div>
+                              </a>
+                            </div>
+                          </li>
+                        </ul>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+{% endblock body %}

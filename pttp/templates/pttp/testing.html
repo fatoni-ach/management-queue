@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% block app_css %}
+  
+{% endblock app_css%}
+
+{% block heading %}
+    <h1 class="h3 mb-0 text-gray-800">{{body_judul}}</h1>
+{% endblock heading %}
+
+{% block body %}
+<div class="row">
+    <div class="card mb-3 col-7">
+        <div class="card-body">
+            <h6 class="m-0 font-weight-bold text-primary" >Masukkan Data : </h6>
+            <hr class="py-0">
+        </div>
+        <div class="card-body col-8" style="margin-top: -40px;">
+            <form method="POST" class="user"  enctype="multipart/form-data" >
+                {% csrf_token%}
+                {% for form in pasien_form %}
+                    {{form.label}}
+                <div class="form-group">
+                    {{form}}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary btn-icon-split">
+                    <span class="icon text-white-50">
+                    <i class="fas fa-save"></i>
+                    </span>
+                    <span class="text">Testing</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card mb-4 col-5">
+        <div class="card-body">
+            <h6 class="m-0 font-weight-bold text-primary">Hasil Testing : </h6>
+            <hr class="py-0">
+        </div>
+        <div class="card-body" style="margin-top: -40px;">
+            <p class="m-0" > Hasil Prediksi :</p>
+            <p class="m-0" >{{hasil}}</p>
+            <p>{{hasil1}}</p>
+        </div>
+    </div>
+</div>
+    
+{% endblock body %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block app_css %}
+  
+{% endblock app_css%}
+
+{% block heading %}
+    <h1 class="h3 mb-0 text-gray-800">{{body_judul}}</h1>
+{% endblock heading %}
+
+{% block body %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Data antrian Rumah Sakit</h6>
+        </div>
+        <div class="card-body col-5">
+            <form method="POST" class="user">
+                {% csrf_token%}
+                {% for form in pasien_form %}
+                    {{form.label}}
+                <div class="form-group">
+                    {{form}}
+                </div>
+                {% endfor %}
+            <button type="submit" class="btn btn-primary btn-user btn-block">
+                Simpan
+            </button>
+            </form>
+        </div>
+    </div>
+{% endblock body %}

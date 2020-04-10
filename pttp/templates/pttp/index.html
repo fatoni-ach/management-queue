@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block app_css %}
+  
+{% endblock app_css%}
+
+{% block heading %}
+    <h1 class="h3 mb-0 text-gray-800">{{body_judul}}</h1>
+{% endblock heading %}
+
+{% block body %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 ">
+    <a href="{% url 'pttp:export' "database" %}" class="btn btn-success btn-icon-split">
+        <span class="text">Training data dari Database</span>
+      </a>
+    <a href="{% url 'pttp:export_iris' "iris" %}" class="btn btn-success btn-icon-split">
+        <span class="text">Training dataset IRIS</span>
+    </a>
+    {% if tipe == "iris" or tipe == "database" %}
+    <hr>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group col-2">
+                <label class="text-gray-700" for="exampleInputEmail">Jumlah Tree</label>
+                <input type="integer" class="form-control form-control-user" name ="tree" id="exampleInputEmail" aria-describedby="emailHelp" placeholder="tree">
+                
+            </div>
+            <button class="btn btn-primary btn-user btn-block col-2"> OK </button>              
+        </form>
+    </div>
+    {% elif tipe == "done" %}
+    <br>
+    <br>
+    {{ message }}
+    {% endif %}
+    </div>
+    {% if tipe == "database"%}  
+    
+    {% endif %}
+</div>
+    
+{% endblock body %}
