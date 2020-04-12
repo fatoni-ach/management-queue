@@ -2,14 +2,14 @@ from django.shortcuts import render, redirect
 from django.http import QueryDict
 from django.utils import dateformat
 from .models import Pasien
-from .forms import PasienForms
+from .forms import PasienForms, PasienUpdateForms
 import datetime
 
 # Create your views here.
 def index(request):
     context = {
         'title':'dataset antrian',
-        'body_judul':'Dataset Antrian',
+        'body_judul':'Dataset Antrian Pasien',
     }
     jp      = Pasien.objects.values('jenis_pengobatan').distinct()
     if request.method == "POST" and request.POST['jenis_pengobatan_input'] != 'all':
@@ -19,7 +19,7 @@ def index(request):
             'jenis_pengobatan_input'    : jenis_pengobatan_input,
         })
     else :
-        pasien = Pasien.objects.order_by('-id')
+        pasien = Pasien.objects.order_by('-created_at')
         context.update({
             'jenis_pengobatan_input'    : '',
         })
@@ -88,7 +88,7 @@ def update(request, pasien_id):
         'waktu_berakhir'    : pasien_update.waktu_berakhir,
     }
 
-    pasien_form = PasienForms(request.POST or None , initial=data, instance=pasien_update )
+    pasien_form = PasienUpdateForms(request.POST or None , initial=data, instance=pasien_update )
     if request.method == "POST" :
         if pasien_form.is_valid():
             pasien_form.save()

@@ -5,14 +5,14 @@ from django.utils import dateformat
 # Create your models here.
 class Pasien(models.Model):
     GENDER = (
-        ('l', 'L'),
-        ('p', 'P'),
+        ('l', 'Laki-laki'),
+        ('p', 'Perempuan'),
         )
     nama_pasien     = models.CharField(max_length=191, blank=True)
     jenis_kelamin   = models.CharField(choices=GENDER, max_length=10, default='l')
     umur            = models.IntegerField(blank=True)
     nama_dokter     = models.CharField(max_length=191, blank=True)
-    jenis_pengobatan= models.CharField(max_length=191, blank=True)
+    jenis_pengobatan= models.CharField(max_length=191)
     waktu_mulai     = models.CharField(max_length=191, blank=True)
     waktu_berakhir  = models.CharField(max_length=191, blank=True)
     durasi_pengobatan= models.IntegerField(blank=True, null=True, default=0)
@@ -50,5 +50,3 @@ class DataPasien(models.Model):
     gol_darah       = models.CharField(max_length=2, choices=DARAH, blank=True, default='A')
     no_telp         = models.CharField(max_length=12, blank=False)
     alamat          = models.CharField(max_length=191, blank=False)
-
-    

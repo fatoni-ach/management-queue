@@ -11,41 +11,47 @@ class TestingForms(forms.ModelForm):
             'nama_dokter',
             'jenis_pengobatan',
         ]
-        GENDER = (
-        ('L', 'l'),
-        ('P', 'p'),
-        )
+
+        labels  = {
+            'nama_pasien' : 'Nama Pasien',
+            'jenis_kelamin' : 'Jenis Kelamin',
+            'umur' : 'Umur',
+            'nama_dokter': 'Nama Dokter',
+            'jenis_pengobatan' : 'Poli',
+        }
+
+        DOKTER = Pasien.objects.all().values_list("nama_dokter","nama_dokter").distinct()
+        POLI = Pasien.objects.all().values_list("jenis_pengobatan","jenis_pengobatan").distinct()
         
         widgets = {
              'nama_pasien': forms.TextInput(
                 attrs={
                     'class':'form-control form-control-user',
-                    'placeholder':'nama',
+                    'placeholder':'Nama',
                 }
             ),
             'jenis_kelamin': forms.Select(
                 attrs={
                     'class':'custom-select custom-select-sm form-control form-control-sm',
                 },
-                choices=GENDER,
                 
             ),
             'umur': forms.TextInput(
                 attrs={
                     'class':'form-control form-control-user',
-                    'placeholder':'umur',
+                    'placeholder':'Umur',
                 }
             ),
-            'nama_dokter': forms.TextInput(
+            'nama_dokter': forms.Select(
+                choices = DOKTER,
                 attrs={
-                    'class':'form-control form-control-user',
-                    'placeholder':'nama dokter',
+                    'class':'custom-select custom-select-sm form-control form-control-sm',
                 }
             ),
-            'jenis_pengobatan': forms.TextInput(
+            'jenis_pengobatan': forms.Select(
+                choices = POLI,
                 attrs={
-                    'class':'form-control form-control-user',
-                    'placeholder':'jenis pengobatan',
+                    'class':'custom-select custom-select-sm form-control form-control-sm',
                 }
             ),
         }

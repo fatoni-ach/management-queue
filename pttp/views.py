@@ -14,7 +14,7 @@ import numpy as np
 def index(request):
     context = {
         'title':'Training Data',
-        'body_judul':'Training Data menggunakan algoritma Random Forest',
+        'body_judul':'Training Data Menggunakan Algoritma Random Forest',
     }
     # time1 = datetime.datetime.strptime("01:18:21    ", '%H:%M:%S')
     # print("hello")
@@ -27,7 +27,7 @@ def training(request):
     pasien = Pasien.objects.all()
     context = {
         'title':'Training Data',
-        'body_judul':'Training Data menggunakan algoritma Random Forest',
+        'body_judul':'Training Data Menggunakan Algoritma Random Forest',
         'pasien':pasien 
     }
     return render(request, "pttp/index.html", context)
@@ -54,7 +54,7 @@ def export(request, tipe):
     
     context = {
         'title':'Training Data',
-        'body_judul':'Training Data menggunakan algoritma Random Forest',
+        'body_judul':'Training Data Menggunakan Algoritma Random Forest',
         'tipe':tipe,
     }
 
@@ -240,8 +240,8 @@ def testing(request):
     # time = datetime.datetime.now().time().isoformat(timespec='seconds')
     # print(time)
     context = {
-        'title':'Halaman percobaan',
-        'body_judul':'ini adalah halaman percobaan',
+        'title':'Testing Data',
+        'body_judul':'Testing Data Menggunakan Algoritma Random Forest',
         'pasien_form': pasien_form,
     }
     if request.method == "POST":
@@ -320,7 +320,9 @@ def testing(request):
             detik = str(detik)
 
             context.update({
-                'hasil' : 'perkiraan lamanya berobat = '+menit+':'+detik,
+                'prediksi':' Prediksi lamanya Berobat ',
+                'menit': 'Menit',
+                'hasil' : menit+':'+detik,
                 'hasil1' : str(hasil)
             })
 

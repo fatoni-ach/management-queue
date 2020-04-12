@@ -14,12 +14,12 @@
     <div class="card shadow mb-4">
         <div class="card-header py-3">
           <div class="row">
-            <h6 class="m-0 font-weight-bold text-primary col-6">Data antrian Rumah Sakit</h6>
+            <h6 class="m-0 font-weight-bold text-primary col-6">Data Antrian Rumah Sakit</h6>
             <hr>
               <div class="col-sm-6 col-md-6 ">
                 <div class="dataTables_length col-12" id="dataTable_length">
                   <div class="row">
-                  <label class="mr-2 mt-1" for="dataTable_length">Jenis Pengobatan</label>
+                  <label class="mr-2 mt-1" for="dataTable_length">Poli</label>
                   <form action="" method="POST">
                     {% csrf_token %}
                   <label class="">
@@ -38,7 +38,7 @@
                       {% endfor %}
                     </select>
                   </label>
-                  <button type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-4">Go</button>
+                  <button type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-4">Filter</button>
                   </form>
                   <label class="mt-1">Total data : {{ pasien.count }}</label>
                   </div>
@@ -53,13 +53,13 @@
                 <tr align="center">
                 <th>No</th>
                 <th>Nama Pasien</th>
-                <th>jenis kelamin</th>
-                <th>umur</th>
-                <th>nama dokter</th>
-                <th>jenis pengobatan</th>
-                <th>waktu mulai</th>
-                <th>waktu berakhir</th>
-                <th>Durasi(second)</th>
+                <th>Jenis Kelamin</th>
+                <th>Umur</th>
+                <th>Nama Dokter</th>
+                <th>Poli</th>
+                <th>Waktu Mulai</th>
+                <th>Waktu Berakhir</th>
+                <th>Durasi (second)</th>
                 <th>Aksi</th>
                 </tr>
             </thead>

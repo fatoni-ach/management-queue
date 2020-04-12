@@ -12,13 +12,15 @@
 {% block body %}
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Data antrian Rumah Sakit</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Data Antrian Rumah Sakit</h6>
         </div>
-        <div class="card-body col-5">
+        <div class="card-body col-12">
             <form method="POST" class="user">
                 {% csrf_token%}
                 {% for form in pasien_form %}
-                    {{form.label}}
+                    {% if form.label != False%}
+                        {{form.label}}
+                    {% endif %}
                 <div class="form-group">
                     {{form}}
                 </div>
