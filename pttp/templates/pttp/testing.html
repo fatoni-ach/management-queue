@@ -24,6 +24,18 @@
                     {{form}}
                 </div>
                 {% endfor %}
+                <div class="form-group">
+                <label for="tipe">Jenis Random Forest : </label>
+                <select name="tipe" id="tipe" class="custom-select form-control form-control-sm">
+                    {% if tipe == 'classifier' or tipe == null%}
+                    <option selected="selected" value="classifier">Classifier</option>
+                    <option value="regressor">Regressor</option>
+                    {% elif tipe == 'regressor'%}
+                    <option value="classifier">Classifier</option>
+                    <option selected="selected" value="regressor">Regressor</option>
+                    {% endif %}
+                </select>
+                </div>
                 <button type="submit" class="btn btn-primary btn-icon-split">
                     <span class="icon text-white-50">
                     <i class="fas fa-save"></i>
@@ -42,7 +54,7 @@
             <p class="m-0" >{{prediksi}}</p>
             <h1>{{hasil}}</h1>
             <p class="m-0" > {{menit}} </p>
-            <p>{{hasil1}}</p>
+            <!-- <p>{{hasil1}}</p> -->
         </div>
     </div>
 </div>

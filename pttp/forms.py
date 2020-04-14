@@ -20,9 +20,10 @@ class TestingForms(forms.ModelForm):
             'jenis_pengobatan' : 'Poli',
         }
 
-        DOKTER = Pasien.objects.all().values_list("nama_dokter","nama_dokter").distinct()
-        POLI = Pasien.objects.all().values_list("jenis_pengobatan","jenis_pengobatan").distinct()
+        DOKTER = [("", "")]+list(Pasien.objects.all().values_list("nama_dokter","nama_dokter").distinct())
+        POLI = [("", "")]+list(Pasien.objects.all().values_list("jenis_pengobatan","jenis_pengobatan").distinct())
         
+
         widgets = {
              'nama_pasien': forms.TextInput(
                 attrs={

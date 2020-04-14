@@ -11,12 +11,15 @@
 {% block body %}
 <div class="card shadow mb-4">
     <div class="card-header py-3 ">
-    <a href="{% url 'pttp:export' "database" %}" class="btn btn-success btn-icon-split">
-        <span class="text">Training data dari Database</span>
+    <a href="{% url 'pttp:database' "clasifier" %}" class="btn btn-success btn-icon-split">
+        <span class="text">Random Forest Clasifier</span>
       </a>
-    <a href="{% url 'pttp:export_iris' "iris" %}" class="btn btn-success btn-icon-split">
-        <span class="text">Training dataset IRIS</span>
+    <a href="{% url 'pttp:database' "regressor" %}" class="btn btn-success btn-icon-split">
+    <span class="text">Random Forest Regressor</span>
     </a>
+    <!-- <a href="{% url 'pttp:export_iris' "iris" %}" class="btn btn-success btn-icon-split">
+        <span class="text">Training dataset IRIS</span>
+    </a> -->
     {% if tipe == "iris" or tipe == "database" %}
     <hr>
     <div class="card-body">
@@ -41,4 +44,17 @@
     {% endif %}
 </div>
     
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Hasil Training : </h6>
+    </div>
+    <div class="card-body">
+        <h6 class="m-0 font-weight-bold text-primary"> {{tipe}} </h6>
+        <hr class="sidebar-divider d-none d-md-block">
+        <p>{{txt_akurasi}} {{akurasi}}</p>
+        <p>{{txt_ab_error}} {{ab_error}}</p>
+        <p> {{txt_presisi}} </p>
+        <p> {{txt_recall}} </p>
+    </div>
+</div>
 {% endblock body %}

@@ -2,7 +2,7 @@ from django import forms
 from .models import Pasien
 
 class PasienForms(forms.ModelForm):
-    class Meta():
+    class Meta(): 
         model       = Pasien
         fields      = [
             'nama_pasien',
@@ -26,8 +26,8 @@ class PasienForms(forms.ModelForm):
             'durasi_pengobatan' : False,
         }
 
-        DOKTER = Pasien.objects.all().values_list("nama_dokter","nama_dokter").distinct()
-        POLI = Pasien.objects.all().values_list("jenis_pengobatan","jenis_pengobatan").distinct()
+        DOKTER =  [("", "")]+list(Pasien.objects.all().values_list("nama_dokter","nama_dokter").distinct())
+        POLI =  [("", "")]+list(Pasien.objects.all().values_list("jenis_pengobatan","jenis_pengobatan").distinct())
         
         widgets = {
             'nama_pasien': forms.TextInput(
@@ -50,6 +50,7 @@ class PasienForms(forms.ModelForm):
             ),
             'nama_dokter': forms.Select(
                 choices = DOKTER,
+                # choices = dokter,
                 attrs={
                     # 'class':'form-control form-control-user',
                     'class':'custom-select custom-select-sm form-control form-control-sm',
@@ -67,6 +68,9 @@ class PasienForms(forms.ModelForm):
             'durasi_pengobatan' : forms.HiddenInput(),
         }
     
+        # def __init__(self, *args, **kwargs):
+        #     super(PasienForms, self).__init__(*args, **kwargs)
+        #     self.fields['nama_dokter'].choices = Pasien.objects.values_list('nama_dokter','nama_dokter').distinct()
 
 class PasienUpdateForms(forms.ModelForm):
     class Meta():
