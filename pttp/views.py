@@ -13,6 +13,7 @@ from sklearn import metrics
 
 N = 1000
 RandomState = 42
+TestSize = 0.30
 
 # Create your views here.
 def index(request):
@@ -35,10 +36,14 @@ def database(request, tipe):
         df = df1
 
         # print(df['waktu_mulai'])
-        df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-        df['waktu_mulai'] = df['waktu_mulai'].dt.total_seconds().astype('int64')
+        df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+        df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
         df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
         df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
+        durasi, bins = pd.cut(np.array(df['durasi_pengobatan']),
+                bins=5, include_lowest=False,labels=[0 , 1, 2, 3, 4] ,
+                 retbins=True)
+        df['durasi_pengobatan']= durasi.astype('int64')
         # print(df)
 
         categorical_feature_mask = df.dtypes==object
@@ -58,29 +63,26 @@ def database(request, tipe):
         features = np.array(features)
 
         from sklearn.model_selection import train_test_split
-        train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = 0.10, random_state = RandomState)
+        train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
 
         from sklearn.ensemble import RandomForestClassifier
         rfc = RandomForestClassifier(n_estimators=N, random_state=RandomState)
         rfc.fit(train_features, train_labels)
         pred_labels = rfc.predict(test_features)
+        akurasi = str((rfc.score(test_features, test_labels)) *100)
+        # print(type(accuracy))
 
         predictions = rfc.predict(test_features)
         errors = abs(predictions - test_labels)
         # print('Mean Absolute Error:', round(np.mean(errors), 2), 'degrees.')
         ab_error = str(round(np.mean(errors), 2))
 
-        mape = 100 * (errors / test_labels)
-        accuracy = 100 - np.mean(mape)
-        # print('Accuracy:', round(accuracy, 2), '%.')
-        akurasi = str(round(accuracy, 2))
-
-        average_precision   = str(metrics.precision_score(test_labels, pred_labels, average='micro')*100)
-        recall              = str(metrics.recall_score(test_labels, pred_labels, average='micro')*100)
+        average_precision   = str(metrics.precision_score(test_labels, pred_labels, average='weighted')*100)
+        recall              = str(metrics.recall_score(test_labels, pred_labels, average='weighted')*100)
         context.update({
             'tipe'          : 'Random Forest Classifier',
             'txt_akurasi'   : 'Akurasi Algoritma : ',
-            'akurasi'       : akurasi+'%',
+            'akurasi'       : akurasi+ '%',
             'txt_ab_error'  : 'Absolute Error : ',
             'ab_error'      : ab_error+' degrees',
             'txt_presisi'   : 'Presisi : '+average_precision+'%',
@@ -92,8 +94,8 @@ def database(request, tipe):
         df = df1
 
         # print(df['waktu_mulai'])
-        df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-        df['waktu_mulai'] = df['waktu_mulai'].dt.total_seconds().astype('int64')
+        df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+        df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
         df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
         df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
         # print(df)
@@ -115,7 +117,7 @@ def database(request, tipe):
         features = np.array(features)
 
         from sklearn.model_selection import train_test_split
-        train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = 0.10, random_state = RandomState)
+        train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
 
         from sklearn.ensemble import RandomForestRegressor
         # Instantiate model with 1000 decision trees
@@ -203,7 +205,7 @@ def export_iris(request, tipe):
         # Labels
 
         # Split dataset into training set and test set
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TestSize)
         # 70% training and 30% test
 
         #Import Random Forest Model
@@ -365,9 +367,14 @@ def testing(request):
                 df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
                 df = df1
 
-                # print(df['waktu_mulai'])
-                df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-                df['waktu_mulai'] = df['waktu_mulai'].dt.total_seconds().astype('int64')
+                df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+                #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
+                #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
+                df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
+                durasi, bins = pd.cut(np.array(df['durasi_pengobatan']),
+                                bins=5, include_lowest=False,labels=[0 , 1, 2, 3, 4] ,
+                                retbins=True)
+                df['durasi_pengobatan']= durasi.astype('int64')
                 df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
                 df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
                 # print(df)
@@ -389,7 +396,7 @@ def testing(request):
                 features = np.array(features)
 
                 from sklearn.model_selection import train_test_split
-                train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = 0.25, random_state = RandomState)
+                train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
 
                 from sklearn.ensemble import RandomForestClassifier
                 rfc = RandomForestClassifier(n_estimators=N, random_state=RandomState)
@@ -399,8 +406,8 @@ def testing(request):
                     int(pasien_form.data['umur']),
                     pasien_form.data['nama_dokter'],
                     pasien_form.data['jenis_pengobatan'],
-                    '10:15:29',
                     time,
+                    '10:15:29',
                     int(0),
                     )} #29
                 a = pd.DataFrame(a)
@@ -412,8 +419,8 @@ def testing(request):
                 temp = df1
                 # print(a['waktu_mulai'])
                 b = a.append(temp)
-                b['waktu_mulai'] = pd.to_timedelta(b['waktu_mulai'])
-                b['waktu_mulai'] = b['waktu_mulai'].dt.total_seconds().astype('int64')
+                b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+                b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
                 # print(b.dtypes)
                 categorical_feature_mask = b.dtypes==object
                 
@@ -426,7 +433,9 @@ def testing(request):
                 b= b.drop('durasi_pengobatan', axis = 1)
                 b= b.drop('waktu_berakhir', axis = 1)
                 # print(b.dtypes)
-                hasil = (rfc.predict(b.head(1)))
+                hasil_array = rfc.predict(b.head(1))
+                # print(bins[hasil+1])
+                hasil = int(bins[hasil_array+1])
                 menit = int(hasil/60)
                 detik = int(hasil%60)
                 menit = str(menit)
@@ -436,7 +445,9 @@ def testing(request):
                     'prediksi':' Prediksi lamanya Berobat ',
                     'menit': 'Menit',
                     'hasil' : menit+':'+detik,
-                    'hasil1' : str(hasil)
+                    'hasil1' : str(hasil_array+1),
+                    'binz'      : str(bins),
+                    'txt_prediksi' : 'Output Sebenarnya',
                 })
         elif request.POST['tipe'] == 'regressor':
             if pasien_form.is_valid():
@@ -446,8 +457,10 @@ def testing(request):
                 df = df1
 
                 # print(df['waktu_mulai'])
-                df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-                df['waktu_mulai'] = df['waktu_mulai'].dt.total_seconds().astype('int64')
+                df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+                #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
+                #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
+                df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
                 df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
                 df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
                 # print(df)
@@ -469,7 +482,7 @@ def testing(request):
                 features = np.array(features)
 
                 from sklearn.model_selection import train_test_split
-                train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = 0.25, random_state = RandomState)
+                train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
 
                 # Import the model we are using
                 from sklearn.ensemble import RandomForestRegressor
@@ -483,8 +496,8 @@ def testing(request):
                     int(pasien_form.data['umur']),
                     pasien_form.data['nama_dokter'],
                     pasien_form.data['jenis_pengobatan'],
-                    '10:15:29',
                     time,
+                    '10:15:29',
                     int(0),
                     )} #29
                 a = pd.DataFrame(a)
@@ -496,8 +509,10 @@ def testing(request):
                 temp = df1
                 # print(a['waktu_mulai'])
                 b = a.append(temp)
-                b['waktu_mulai'] = pd.to_timedelta(b['waktu_mulai'])
-                b['waktu_mulai'] = b['waktu_mulai'].dt.total_seconds().astype('int64')
+                b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+                #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
+                #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
+                b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
                 # print(b.dtypes)
                 categorical_feature_mask = b.dtypes==object
                 
@@ -521,6 +536,7 @@ def testing(request):
                     'menit': 'Menit',
                     'hasil' : menit+':'+detik,
                     'hasil1' : str(hasil),
+                    'txt_prediksi' : 'Output Sebenarnya',
                     'tipe' : request.POST['tipe']
                 })
     
