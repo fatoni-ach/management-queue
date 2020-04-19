@@ -29,10 +29,10 @@
                 <select name="tipe" id="tipe" class="custom-select form-control form-control-sm">
                     {% if tipe == 'classifier' or tipe == null%}
                     <option selected="selected" value="classifier">Classifier</option>
-                    <option value="regressor">Regressor</option>
+                    <!-- <option value="regressor">Regressor</option> -->
                     {% elif tipe == 'regressor'%}
                     <option value="classifier">Classifier</option>
-                    <option selected="selected" value="regressor">Regressor</option>
+                    <!-- <option selected="selected" value="regressor">Regressor</option> -->
                     {% endif %}
                 </select>
                 </div>
