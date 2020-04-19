@@ -11,8 +11,8 @@ from sklearn import datasets
 import numpy as np
 from sklearn import metrics
 
-N = 1000
-RandomState = 42
+N = 500
+RandomState = 0
 TestSize = 0.30
 
 # Create your views here.
@@ -76,17 +76,28 @@ def database(request, tipe):
         errors = abs(predictions - test_labels)
         # print('Mean Absolute Error:', round(np.mean(errors), 2), 'degrees.')
         ab_error = str(round(np.mean(errors), 2))
+        test_pred=rfc.predict(test_features)
 
-        average_precision   = str(metrics.precision_score(test_labels, pred_labels, average='weighted')*100)
-        recall              = str(metrics.recall_score(test_labels, pred_labels, average='weighted')*100)
+        from sklearn.metrics import f1_score
+        from sklearn.metrics import precision_score
+        from sklearn.metrics import recall_score
+
+        score = str(rfc.score(test_features,test_labels))
+        ps = str(precision_score(test_labels, test_pred, average='macro'))
+        rs = str(recall_score(test_labels, test_pred, average='macro'))
+        fs = str(f1_score(test_labels, test_pred, average='macro'))
+
+
+        # average_precision   = str(metrics.precision_score(test_labels, pred_labels, average='weighted')*100)
+        # recall              = str(metrics.recall_score(test_labels, pred_labels, average='weighted')*100)
         context.update({
             'tipe'          : 'Random Forest Classifier',
             'txt_akurasi'   : 'Akurasi Algoritma : ',
             'akurasi'       : akurasi+ '%',
-            'txt_ab_error'  : 'Absolute Error : ',
-            'ab_error'      : ab_error+' degrees',
-            'txt_presisi'   : 'Presisi : '+average_precision+'%',
-            'txt_recall'    : 'Recall   : '+recall+'%',
+            'txt_ab_error'  : 'Presisi Score : ',
+            'ab_error'      : ps+' degrees',
+            'txt_presisi'   : 'recal score : '+rs,
+            'txt_recall'    : 'F measure   : '+fs,
         })
     elif tipe == 'regressor':
         df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
@@ -146,16 +157,16 @@ def database(request, tipe):
 
     return render(request, "pttp/index.html", context)
 
-def export(request, tipe):
-    # response = HttpResponse(content_type='text/csv')
-    # response['Content-Disposition']='attachment; filename="users.csv"'
-    # writer = csv.writer(response)
-    # writer.writerow(['id', 'nama_pasien','jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan'])
-    # users = Pasien.objects.all().values_list('id','nama_pasien','jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')
-    # for user in users:
-    #     writer.writerow(user)
-    #     print(user)
-    # return response
+def export(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition']='attachment; filename="users.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['id', 'nama_pasien','jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan'])
+    users = Pasien.objects.all().values_list('id','nama_pasien','jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')
+    for user in users:
+        writer.writerow(user)
+        print(user)
+    return response
     # heading = (['id', 'nama_pasien', 'jenis_kelamin'])
     # users = Pasien.objects.all().values_list('id', 'nama_pasien', 'jenis_kelamin')
     # for user in users:
@@ -169,7 +180,6 @@ def export(request, tipe):
     context = {
         'title':'Training Data',
         'body_judul':'Training Data Menggunakan Algoritma Random Forest',
-        'tipe':tipe,
     }
 
     if request.method == "POST":
