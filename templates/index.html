@@ -3,4 +3,61 @@
 
 {% block app_css %}
   
-{% endblock app_css%}
+{% endblock app_css%} 
+{% block heading %}
+    <h1 class="h3 mb-0 text-gray-800">{{body_judul}}</h1>
+    <a href="{% url 'reset' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"> Reset </a>
+
+{% endblock heading %}
+
+{% block body %}
+<div class="row justify-content-center">
+<div class="col-7">
+<div class="card shadow">
+    <div class="card-header">
+        <div class="row">
+            <h6 class="m-0 font-weight-bold text-primary">No Antrian :</h6>
+        </div>
+    </div>
+    <div class="card-body" align="center">
+        {% if no_sekarang.status == "uncall" %}
+        <h1 class="m-2 font-weight-bold text-primary">{{no_sekarang.no}}</h1> 
+        <hr class="py-0">   
+        {% elif no_sekarang.status == "call" %}
+        <h1 class="m-2 font-weight-bold text-danger">{{no_sekarang.no}}</h1> 
+        <hr class="py-0">   
+        {% endif %}
+        {% if no_sekarang.status == "uncall" %}
+        <form action="" method="post">
+            {% csrf_token %}
+            <button type="submit" name="no_sekarang" value={{no_sekarang.id}} class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">Panggil</button>
+        </form>
+        {% elif no_sekarang.status == "call" %}
+        <form action="" method="post">
+            {% csrf_token %}
+            <button type="submit" name="no_sekarang" value={{no_sekarang.id}} class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">Selesai</button>
+        </form>
+        {% endif %}
+        <div class="table-responsive mt-3">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+                <tr align="center">
+                <th>No Antrian Pasien</th>
+                <th>Nama</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in antrian%}
+                <tr align="center">
+                   <td>{{data.no}}</td>
+                   <td>{{data.data_pasien.nama_pasien}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock body%}

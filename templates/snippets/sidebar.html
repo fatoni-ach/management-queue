@@ -9,13 +9,18 @@
         <!-- <i class="fas fa-laugh-wink"></i> -->
         <img height="50px" src="{% static 'img/logo_m2.png' %}" alt="">
       </div>
-      <div class="sidebar-brand-text mx-3">Admin</sup></div>
+      <div class="sidebar-brand-text mx-3">{{user}}</sup></div>
     </a>
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'index' %}">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>Antrian Caller</span></a>
+    </li>
     <li class="nav-item">
       <a class="nav-link" href="{% url 'antrian:index' %}">
         <i class="fas fa-fw fa-table"></i>
@@ -35,7 +40,7 @@
     <hr>
     <hr class="sidebar-divider my-0">
     <li class="nav-item">
-      <a class="nav-link" href="{% url 'index' %}">
+      <a class="nav-link" href="{% url 'logout' %}">
         <i class="fas fa-fw fa-sign-out-alt"></i>
         <span>Logout</span></a>
     </li>

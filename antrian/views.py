@@ -4,8 +4,10 @@ from django.utils import dateformat
 from .models import Pasien
 from .forms import PasienForms, PasienUpdateForms
 import datetime
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+@login_required
 def index(request):
     context = {
         'title':'dataset antrian',
@@ -23,7 +25,8 @@ def index(request):
         context.update({
             'jenis_pengobatan_input'    : '',
         })
-
+    for pas in pasien:
+        pas.durasi_pengobatan = int(pas.durasi_pengobatan/60)
     context.update({
         'pasien':pasien,
         'jp'    : jp
@@ -31,6 +34,7 @@ def index(request):
     
     return render(request, 'antrian/index.html', context)
 
+@login_required
 def jenis_pengobatan(request):
     jenis_pengobatan_input = request.POST.copy()
     print(jenis_pengobatan_input['jenis_pengobatan_input'])
@@ -46,7 +50,7 @@ def jenis_pengobatan(request):
     return render(request, 'antrian/index.html', context)
 
 
-
+@login_required
 def selesai(request, pasien_id):
     pasien_update = Pasien.objects.get(id=pasien_id)
     pasien_update.waktu_berakhir = dateformat.format(datetime.datetime.now() , 'H:i:s')
@@ -58,6 +62,7 @@ def selesai(request, pasien_id):
     pasien_update.save()
     return redirect('antrian:index')
 
+@login_required
 def create(request):
     pasien_form = PasienForms(request.POST.copy() or None)
     pasien = Pasien.objects.all()
@@ -76,6 +81,7 @@ def create(request):
     }
     return render(request, 'antrian/create.html', context)
 
+@login_required
 def update(request, pasien_id):
     pasien_update = Pasien.objects.get(id=pasien_id)
     data = {
@@ -102,7 +108,7 @@ def update(request, pasien_id):
 
     return render(request, 'antrian/create.html', context)
 
-
+@login_required
 def delete(request, pasien_id):
     Pasien.objects.filter(id=pasien_id).delete()
     return redirect('antrian:index')

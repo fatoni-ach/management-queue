@@ -27,10 +27,6 @@ class Pasien(models.Model):
         return "{}.{}".format(self.id, self.nama_pasien)
 
 
-class NoAntrian(models.Model):
-    no      = models.IntegerField(),
-    durasi  = models.IntegerField(),
-
 class DataPasien(models.Model):
     GENDER = (
         ('l', 'L'),
@@ -50,3 +46,20 @@ class DataPasien(models.Model):
     gol_darah       = models.CharField(max_length=2, choices=DARAH, blank=True, default='A')
     no_telp         = models.CharField(max_length=12, blank=False)
     alamat          = models.CharField(max_length=191, blank=False)
+    created_at      = models.DateTimeField(auto_now_add=True, blank=True)
+    updated_at       = models.DateTimeField(auto_now=True, blank=True)
+    
+    def __str__(self):
+        return "{}.{}:{}".format(self.id, self.nama_pasien, self.no_telp)
+
+class NoAntrian(models.Model):
+    no      = models.IntegerField(default=0)
+    durasi  = models.IntegerField(default=0)
+    data_pasien = models.ForeignKey(DataPasien, on_delete=models.CASCADE, default=40)
+    status  = models.CharField(max_length=9, blank=True)
+    pemanggil   = models.CharField(max_length=20, blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True, blank=True)
+    updated_at       = models.DateTimeField(auto_now=True, blank=True)
+
+    def __str__(self):
+        return "{}.{}.{}:status = {}".format(self.id, self.no, self.durasi, self.status)

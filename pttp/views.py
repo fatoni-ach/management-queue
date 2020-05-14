@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.utils import dateformat
 from django.http import HttpResponse, QueryDict
 from antrian.models import Pasien
@@ -10,12 +11,16 @@ import datetime
 from sklearn import datasets
 import numpy as np
 from sklearn import metrics
+import joblib
+from sklearn.preprocessing import LabelEncoder
 
 N = 500
 RandomState = 0
 TestSize = 0.30
+PATH_MODEL = "pttp/model/"
 
 # Create your views here.
+@login_required
 def index(request):
     context = {
         'title':'Training Data',
@@ -24,6 +29,7 @@ def index(request):
 
     return render(request, "pttp/index.html", context)
 
+@login_required
 def database(request, tipe):
     context = {
         'title':'Training Data',
@@ -41,7 +47,7 @@ def database(request, tipe):
         df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
         df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
         durasi, bins = pd.cut(np.array(df['durasi_pengobatan']),
-                bins=5, include_lowest=False,labels=[0 , 1, 2, 3, 4] ,
+                [0, 300, 900, 1500, 2100, 2700],include_lowest=False,labels=[0 , 1, 2, 3, 4] ,
                  retbins=True)
         df['durasi_pengobatan']= durasi.astype('int64')
         # print(df)
@@ -87,6 +93,8 @@ def database(request, tipe):
         rs = str(recall_score(test_labels, test_pred, average='macro'))
         fs = str(f1_score(test_labels, test_pred, average='macro'))
 
+        joblib.dump(rfc, PATH_MODEL+"random_forest_model.joblib", compress=True)
+        joblib.dump(bins, PATH_MODEL+"bins.joblib", compress=True)
 
         # average_precision   = str(metrics.precision_score(test_labels, pred_labels, average='weighted')*100)
         # recall              = str(metrics.recall_score(test_labels, pred_labels, average='weighted')*100)
@@ -157,6 +165,7 @@ def database(request, tipe):
 
     return render(request, "pttp/index.html", context)
 
+@login_required
 def export(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition']='attachment; filename="users.csv"'
@@ -190,6 +199,7 @@ def export(request):
         })
     return render(request, "pttp/index.html", context)
 
+@login_required
 def export_iris(request, tipe):
     context={
         'title':'Training Data',
@@ -243,6 +253,7 @@ def export_iris(request, tipe):
 
     return render(request, "pttp/index.html", context)
 
+@login_required
 def convert_time(request):
     context = {
         'title':'Training Data',
@@ -257,6 +268,7 @@ def convert_time(request):
 
     return render(request, "pttp/index.html", context)
 
+@login_required
 def get_duration(request):
     context = {
         'title':'Training Data',
@@ -359,6 +371,7 @@ def get_duration(request):
 #     accuracy = 100 - np.mean(mape)
 #     print('Accuracy:', round(accuracy, 2), '%.')
 
+@login_required
 def testing(request):
     pasien_form = TestingForms(request.POST.copy() or None)
     # time = datetime.datetime.now().time().isoformat(timespec='seconds')
@@ -370,193 +383,147 @@ def testing(request):
     }
     if request.method == "POST":
         # csv_file = request.FILES['csv']
-        if request.POST['tipe'] == 'classifier':
-            if pasien_form.is_valid():
+        # if request.POST['tipe'] == 'classifier':
+        if pasien_form.is_valid():
+            rfc = joblib.load(PATH_MODEL+"random_forest_model.joblib")
+            bins = joblib.load(PATH_MODEL+"bins.joblib")
+            time = datetime.datetime.now().time().isoformat(timespec='seconds')
+            a={(pasien_form.data['jenis_kelamin'],
+                int(pasien_form.data['umur']),
+                pasien_form.data['nama_dokter'],
+                pasien_form.data['jenis_pengobatan'],
+                time,
+                '10:15:29',
+                int(0),
+                )} #29
+            a = pd.DataFrame(a)
+            a.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+            
+            df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
+            df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+            
+            temp = df1
+            # print(a['waktu_mulai'])
+            b = a.append(temp)
+            b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+            b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
+            # print(b.dtypes)
+            categorical_feature_mask = b.dtypes==object
+            
+            categorical_cols = b.columns[categorical_feature_mask].tolist()
+            # print(categorical_cols)
+            # b[categorical_cols] = le.fit_transform(b[categorical_cols])
+            # print(b[categorical_cols].dtypes)
+            le = LabelEncoder()
+            b[categorical_cols] = b[categorical_cols].apply(lambda col: le.fit_transform(col.astype(str)))
+            b= b.drop('durasi_pengobatan', axis = 1)
+            b= b.drop('waktu_berakhir', axis = 1)
+            # print(b.dtypes)
+            hasil_array = rfc.predict(b.head(1))
+            # print(bins[hasil+1])
+            hasil = int(bins[hasil_array+1])
+            menit = int(hasil/60)
+            detik = int(hasil%60)
+            menit = str(menit)
+            detik = str(detik)
 
-                df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
-                df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
-                df = df1
+            context.update({
+                'prediksi':' Prediksi lamanya Berobat ',
+                'menit': 'Menit',
+                'hasil' : menit,
+                'hasil1' : str(hasil_array+1),
+                'binz'      : str(bins),
+                'txt_prediksi' : 'Output Sebenarnya',
+            })
+        # if request.POST['tipe'] == 'regressor':
+        #     if pasien_form.is_valid():
 
-                df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
-                #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-                #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
-                df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
-                durasi, bins = pd.cut(np.array(df['durasi_pengobatan']),
-                                bins=5, include_lowest=False,labels=[0 , 1, 2, 3, 4] ,
-                                retbins=True)
-                df['durasi_pengobatan']= durasi.astype('int64')
-                df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
-                df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
-                # print(df)
+        #         df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
+        #         df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+        #         df = df1
 
-                categorical_feature_mask = df.dtypes==object
-                categorical_cols = df.columns[categorical_feature_mask].tolist()
-                from sklearn.preprocessing import LabelEncoder
-                le = LabelEncoder()
-                # print(df.dtypes)
-                df[categorical_cols] = df[categorical_cols].apply(lambda col: le.fit_transform(col))
-                features = df
-                # print(features.dtypes)
+        #         # print(df['waktu_mulai'])
+        #         df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+        #         #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
+        #         #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
+        #         df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
+        #         df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
+        #         df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
+        #         # print(df)
 
-                labels = np.array(features['durasi_pengobatan'])
-                features= features.drop('durasi_pengobatan', axis = 1)
-                features= features.drop('waktu_berakhir', axis = 1)
-                # print(features.dtypes)
-                feature_list = list(features.columns)
-                features = np.array(features)
+        #         categorical_feature_mask = df.dtypes==object
+        #         categorical_cols = df.columns[categorical_feature_mask].tolist()
+        #         from sklearn.preprocessing import LabelEncoder
+        #         le = LabelEncoder()
+        #         # print(df.dtypes)
+        #         df[categorical_cols] = df[categorical_cols].apply(lambda col: le.fit_transform(col))
+        #         features = df
+        #         # print(features.dtypes)
 
-                from sklearn.model_selection import train_test_split
-                train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
+        #         labels = np.array(features['durasi_pengobatan'])
+        #         features= features.drop('durasi_pengobatan', axis = 1)
+        #         features= features.drop('waktu_berakhir', axis = 1)
+        #         # print(features.dtypes)
+        #         feature_list = list(features.columns)
+        #         features = np.array(features)
 
-                from sklearn.ensemble import RandomForestClassifier
-                rfc = RandomForestClassifier(n_estimators=N, random_state=RandomState)
-                rfc.fit(train_features, train_labels)
-                time = datetime.datetime.now().time().isoformat(timespec='seconds')
-                a={(pasien_form.data['jenis_kelamin'],
-                    int(pasien_form.data['umur']),
-                    pasien_form.data['nama_dokter'],
-                    pasien_form.data['jenis_pengobatan'],
-                    time,
-                    '10:15:29',
-                    int(0),
-                    )} #29
-                a = pd.DataFrame(a)
-                a.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+        #         from sklearn.model_selection import train_test_split
+        #         train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
+
+        #         # Import the model we are using
+        #         from sklearn.ensemble import RandomForestRegressor
+        #         # Instantiate model with 1000 decision trees
+        #         rfr = RandomForestRegressor(n_estimators = N, random_state = RandomState)
+        #         # Train the model on training data
+        #         rfr.fit(train_features, train_labels);
+
+        #         time = datetime.datetime.now().time().isoformat(timespec='seconds')
+        #         a={(pasien_form.data['jenis_kelamin'],
+        #             int(pasien_form.data['umur']),
+        #             pasien_form.data['nama_dokter'],
+        #             pasien_form.data['jenis_pengobatan'],
+        #             time,
+        #             '10:15:29',
+        #             int(0),
+        #             )} #29
+        #         a = pd.DataFrame(a)
+        #         a.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
                 
-                df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
-                df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+        #         df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
+        #         df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
                 
-                temp = df1
-                # print(a['waktu_mulai'])
-                b = a.append(temp)
-                b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
-                b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
-                # print(b.dtypes)
-                categorical_feature_mask = b.dtypes==object
+        #         temp = df1
+        #         # print(a['waktu_mulai'])
+        #         b = a.append(temp)
+        #         b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+        #         #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
+        #         #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
+        #         b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
+        #         # print(b.dtypes)
+        #         categorical_feature_mask = b.dtypes==object
                 
-                categorical_cols = b.columns[categorical_feature_mask].tolist()
-                # print(categorical_cols)
-                # b[categorical_cols] = le.fit_transform(b[categorical_cols])
-                # print(b[categorical_cols].dtypes)
+        #         categorical_cols = b.columns[categorical_feature_mask].tolist()
+        #         # print(categorical_cols)
+        #         # b[categorical_cols] = le.fit_transform(b[categorical_cols])
+        #         # print(b[categorical_cols].dtypes)
 
-                b[categorical_cols] = b[categorical_cols].apply(lambda col: le.fit_transform(col.astype(str)))
-                b= b.drop('durasi_pengobatan', axis = 1)
-                b= b.drop('waktu_berakhir', axis = 1)
-                # print(b.dtypes)
-                hasil_array = rfc.predict(b.head(1))
-                # print(bins[hasil+1])
-                hasil = int(bins[hasil_array+1])
-                menit = int(hasil/60)
-                detik = int(hasil%60)
-                menit = str(menit)
-                detik = str(detik)
+        #         b[categorical_cols] = b[categorical_cols].apply(lambda col: le.fit_transform(col.astype(str)))
+        #         b= b.drop('durasi_pengobatan', axis = 1)
+        #         b= b.drop('waktu_berakhir', axis = 1)
+        #         # print(b.dtypes)
+        #         hasil = (rfr.predict(b.head(1)))
+        #         menit = int(hasil/60)
+        #         detik = int(hasil%60)
+        #         menit = str(menit)
+        #         detik = str(detik)
 
-                context.update({
-                    'prediksi':' Prediksi lamanya Berobat ',
-                    'menit': 'Menit',
-                    'hasil' : menit+':'+detik,
-                    'hasil1' : str(hasil_array+1),
-                    'binz'      : str(bins),
-                    'txt_prediksi' : 'Output Sebenarnya',
-                })
-        elif request.POST['tipe'] == 'regressor':
-            if pasien_form.is_valid():
-
-                df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
-                df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
-                df = df1
-
-                # print(df['waktu_mulai'])
-                df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
-                #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-                #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
-                df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
-                df['waktu_berakhir'] = pd.to_timedelta( df['waktu_berakhir'])
-                df['waktu_berakhir'] = df['waktu_berakhir'].dt.total_seconds().astype('int64')
-                # print(df)
-
-                categorical_feature_mask = df.dtypes==object
-                categorical_cols = df.columns[categorical_feature_mask].tolist()
-                from sklearn.preprocessing import LabelEncoder
-                le = LabelEncoder()
-                # print(df.dtypes)
-                df[categorical_cols] = df[categorical_cols].apply(lambda col: le.fit_transform(col))
-                features = df
-                # print(features.dtypes)
-
-                labels = np.array(features['durasi_pengobatan'])
-                features= features.drop('durasi_pengobatan', axis = 1)
-                features= features.drop('waktu_berakhir', axis = 1)
-                # print(features.dtypes)
-                feature_list = list(features.columns)
-                features = np.array(features)
-
-                from sklearn.model_selection import train_test_split
-                train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
-
-                # Import the model we are using
-                from sklearn.ensemble import RandomForestRegressor
-                # Instantiate model with 1000 decision trees
-                rfr = RandomForestRegressor(n_estimators = N, random_state = RandomState)
-                # Train the model on training data
-                rfr.fit(train_features, train_labels);
-
-                time = datetime.datetime.now().time().isoformat(timespec='seconds')
-                a={(pasien_form.data['jenis_kelamin'],
-                    int(pasien_form.data['umur']),
-                    pasien_form.data['nama_dokter'],
-                    pasien_form.data['jenis_pengobatan'],
-                    time,
-                    '10:15:29',
-                    int(0),
-                    )} #29
-                a = pd.DataFrame(a)
-                a.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
-                
-                df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
-                df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
-                
-                temp = df1
-                # print(a['waktu_mulai'])
-                b = a.append(temp)
-                b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
-                #df['waktu_mulai'] = pd.to_timedelta( df['waktu_mulai'])
-                #df['waktu_mulai'] = df['waktu_mulai'].dt.hour.astype('int64')
-                b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
-                # print(b.dtypes)
-                categorical_feature_mask = b.dtypes==object
-                
-                categorical_cols = b.columns[categorical_feature_mask].tolist()
-                # print(categorical_cols)
-                # b[categorical_cols] = le.fit_transform(b[categorical_cols])
-                # print(b[categorical_cols].dtypes)
-
-                b[categorical_cols] = b[categorical_cols].apply(lambda col: le.fit_transform(col.astype(str)))
-                b= b.drop('durasi_pengobatan', axis = 1)
-                b= b.drop('waktu_berakhir', axis = 1)
-                # print(b.dtypes)
-                hasil = (rfr.predict(b.head(1)))
-                menit = int(hasil/60)
-                detik = int(hasil%60)
-                menit = str(menit)
-                detik = str(detik)
-
-                context.update({
-                    'prediksi':' Prediksi lamanya Berobat ',
-                    'menit': 'Menit',
-                    'hasil' : menit+':'+detik,
-                    'hasil1' : str(hasil),
-                    'txt_prediksi' : 'Output Sebenarnya',
-                    'tipe' : request.POST['tipe']
-                })
+        #         context.update({
+        #             'prediksi':' Prediksi lamanya Berobat ',
+        #             'menit': 'Menit',
+        #             'hasil' : menit+':'+detik,
+        #             'hasil1' : str(hasil),
+        #             'txt_prediksi' : 'Output Sebenarnya',
+        #             'tipe' : request.POST['tipe']
+        #         })
     
     return render(request, 'pttp/testing.html', context)
-
-
-    # from sklearn.ensemble import RandomForestClassifier
-    # clf=RandomForestClassifier(n_estimators=100)
-    # clf.fit(X_train,y_train)
-    # y_pred=clf.predict(X_test)
-    # from sklearn import metrics
-    # print("Accuracy:",metrics.accuracy_score(y_test, y_pred)*100," %")
-    # print(y_pred)
