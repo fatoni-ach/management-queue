@@ -6,7 +6,7 @@ from django.middleware.csrf import get_token
 
 # Create your views here.
 def index(request):
-    if(request.method == 'GET' ):
+    if request.method == "GET" :
         token = get_token(request)
         return JsonResponse({'token': token, 'success': 'true'})
     else:
@@ -20,14 +20,14 @@ def index(request):
                 'no_antrian':15,
             }
             return HttpResponse(context)
-    context = {
-        'title':'api'
-    }
-    context1 = {
-        "error": "0",
-        "message": "Successfull",
-        "prediction": "Normal",
-        "confidence_score": 69.0,
-        'status':'tidakada'
-    }
-    return JsonResponse(context1)
+    # context = {
+    #     'title':'api'
+    # }
+    # context1 = {
+    #     "error": "0",
+    #     "message": "Successfull",
+    #     "prediction": "Normal",
+    #     "confidence_score": 69.0,
+    #     'status':'tidakada'
+    # }
+    # return JsonResponse(context1)
