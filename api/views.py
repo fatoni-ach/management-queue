@@ -5,6 +5,13 @@ from django.http import JsonResponse
 
 # Create your views here.
 def index(request):
+    if request.method == "POST":
+        if request.POST['action'] == "cek_id":
+            context = {
+                'status':'ada',
+                'no_antrian':15,
+            }
+            return JsonResponse(context)
     context = {
         'title':'api'
     }
@@ -12,6 +19,7 @@ def index(request):
         "error": "0",
         "message": "Successfull",
         "prediction": "Normal",
-        "confidence_score": 69.0
+        "confidence_score": 69.0,
+        'status':'tidakada'
     }
     return JsonResponse(context1)
