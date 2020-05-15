@@ -1,8 +1,19 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render
 from rest_framework.response import Response
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
+
+from api.serializers import addSerializers
+from rest_framework.generics import (CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView)
+from rest_framework.response import Response
+from antrian.models import Pasien, DataPasien, NoAntrian
+
+from rest_framework.permissions import (IsAuthenticated,)
+	
+
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import SessionAuthentication
 
 # Create your views here.
 def index(request):
@@ -19,7 +30,7 @@ def index(request):
                 'status':'ada',
                 'no_antrian':15,
             }
-            return HttpResponse(context)
+            return JsonResponse(context)
     # context = {
     #     'title':'api'
     # }
@@ -31,3 +42,7 @@ def index(request):
     #     'status':'tidakada'
     # }
     # return JsonResponse(context1)
+
+class TambahAntrian(ListAPIView):
+    serializer_class = addSerializers
+    queryset = DataPasien.objects.all()
