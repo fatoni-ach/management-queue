@@ -53,7 +53,7 @@ def list_pasien(request):
     if request.method == "GET":
         pasien = Pasien.objects.all()
         pasien_serializers = pasienSerializers(pasien, many=True)
-        return Response(pasien_serializers.data)
+        return JsonResponse(pasien_serializers.data)
     
     elif request.method == "POST":
         print(request.POST)
