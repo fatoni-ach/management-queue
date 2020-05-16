@@ -3,8 +3,9 @@ from rest_framework.response import Response
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
+from rest_framework.decorators import api_view
 
-from api.serializers import addSerializers
+from api.serializers import addSerializers, pasienSerializers, dataPasienSerializers, noAntrianSerializers
 from rest_framework.generics import (CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView)
 from rest_framework.response import Response
 from antrian.models import Pasien, DataPasien, NoAntrian
@@ -46,3 +47,22 @@ def index(request):
 class TambahAntrian(ListAPIView):
     serializer_class = addSerializers
     queryset = DataPasien.objects.all()
+
+@api_view(['GET', 'POST'])
+def list_pasien(request):
+    if request.method == "GET":
+        pasien = Pasien.objects.all()
+        pasien_serializers = pasienSerializers(pasien, many=True)
+        return Response(pasien_serializers.data)
+    
+    elif request.method == "POST":
+        print(request.POST)
+        serializers = dataPasienSerializers(data=request.data)
+        if serializers.is_valid():
+            print(serializers.data)
+            return JsonResponse(serializers.data, safe=False)
+        else :
+            print("GAGAL")
+            return JsonResponse("GAGAL", safe=False)
+
+        
