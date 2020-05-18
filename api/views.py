@@ -98,8 +98,8 @@ def adddatapasien(request):
 @api_view(['POST'])
 def addnoantrian(request):
     if request.method == "POST":
-        no_telp_data = request.POST["no_telp"]
-        jenis_pengobatan_data = request.POST["jenis_pengobatan"]
+        no_telp_data = request.data["no_telp"]
+        jenis_pengobatan_data = request.data["jenis_pengobatan"]
         dataPasien = DataPasien.objects.get(no_telp=no_telp_data)
         data = {
             'no':4,
