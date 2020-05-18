@@ -32,16 +32,6 @@ class pasienSerializers(ModelSerializer):
             'durasi_pengobatan',
         ]
 
-class noAntrianSerializers(ModelSerializer):
-    class Meta:
-        model = NoAntrian
-        fields  = [
-            'no',
-            'durasi',
-            'data_pasien',
-            'status',
-            'pemanggil',
-        ]
 
 class dataPasienSerializers(ModelSerializer):
     class Meta:
@@ -55,6 +45,18 @@ class dataPasienSerializers(ModelSerializer):
             'gol_darah',
             'no_telp',
             'alamat',
+        ]
+
+class noAntrianSerializers(ModelSerializer):
+    data_pasien = dataPasienSerializers()
+    class Meta:
+        model = NoAntrian()
+        fields  = [
+            'no',
+            'durasi',
+            'data_pasien',
+            'status',
+            'pemanggil',
         ]
 
 class ambilAntrianSerializers(ModelSerializer):
