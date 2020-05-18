@@ -56,3 +56,7 @@ class dataPasienSerializers(ModelSerializer):
             'no_telp',
             'alamat',
         ]
+
+class ambilAntrianSerializers(ModelSerializer):
+    no_telp         = serializers.CharField(max_length=12)
+    jenis_pengobatan= serializers.CharField(max_length=191)
