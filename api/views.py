@@ -143,29 +143,38 @@ def getStatus(request):
             no = 0
             waktu_tunggu = 0
             jumlah_antrian = 0
+            status = False
             pasien = ""
             for data in noAntrian:
                 if data.data_pasien.no_telp == no_telp:
                     pasien = data.data_pasien.nama_pasien
                     no = data.no
+                    status = True
                     break
                 else : 
                     waktu_tunggu = waktu_tunggu+data.durasi
                     jumlah_antrian = jumlah_antrian+1
             
-
-            hour    = int(waktu_tunggu/60)
-            minutes = str(waktu_tunggu%60)
-            if hour!= 0 :
-                waktu_tunggu_string = str(hour)+" Jam "+minutes+" Menit" 
-            else :
-                waktu_tunggu_string = minutes+" Menit" 
-       
-            data = {
-                'no':no,
-                'waktu_tunggu':waktu_tunggu_string,
-                'jumlah_antrian':jumlah_antrian
-            }
-            
-            return JsonResponse(data , safe=False)
+            if status==False :
+                data = {
+                    'no':0,
+                    'waktu_tunggu':"null",
+                    'jumlah_antrian':0
+                }
+                return JsonResponse(data , safe=False)
+            else:
+                hour    = int(waktu_tunggu/60)
+                minutes = str(waktu_tunggu%60)
+                if hour!= 0 :
+                    waktu_tunggu_string = str(hour)+" Jam "+minutes+" Menit" 
+                else :
+                    waktu_tunggu_string = minutes+" Menit" 
+        
+                data = {
+                    'no':no,
+                    'waktu_tunggu':waktu_tunggu_string,
+                    'jumlah_antrian':jumlah_antrian
+                }
+                
+                return JsonResponse(data , safe=False)
 
