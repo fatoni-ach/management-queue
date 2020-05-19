@@ -62,5 +62,5 @@ class NoAntrian(models.Model):
     updated_at       = models.DateTimeField(auto_now=True, blank=True)
 
     def __str__(self):
-        return "{}.{}.{}:status = {} :pasien={}".format(self.id, 
-        self.no, self.durasi, self.status, self.data_pasien.nama_pasien)
+        return "id={} |no={} |durasi{} |status = {} |pasien={}".format(
+            self.id, self.no, self.durasi, self.status, self.data_pasien.nama_pasien)

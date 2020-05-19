@@ -8,4 +8,5 @@ urlpatterns=[
     url(r'^datapasien/$', views.datapasien, name='datapasien'),
     url(r'^adddatapasien/$', views.adddatapasien, name='adddatapasien'),
     url(r'^addnoantrian/$', views.addnoantrian, name='addnoantrian'),
+    url(r'^getStatus/$', views.getStatus, name='getStatus'),
 ]
