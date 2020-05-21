@@ -13,7 +13,7 @@ class DataPasien(models.Model):
         ('B', 'B'),
         ('AB', 'AB'),
          ('O', 'O'),
-        )
+        ) 
     nama_pasien     = models.CharField(max_length=191, blank=False)
     no_ktp          = models.CharField(max_length=20, blank=False)
     jenis_kelamin   = models.CharField(max_length=1, blank=False, choices=GENDER, default='l')
