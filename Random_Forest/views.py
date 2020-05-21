@@ -88,7 +88,7 @@ def setDataSet(noAntrian):
         'waktu_mulai'       : dateformat.format(datetime.datetime.now(), 'H:i:s'),
         'waktu_berakhir'    : "",
         'durasi_pengobatan' : 0, 
-        'no_antrian'        : noAntrian
+        'no_antrian'        : noAntrian,
     }
     Pasien.objects.bulk_create([Pasien(**data)])
     
