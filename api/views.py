@@ -2,6 +2,11 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
+import joblib
+import datetime
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
 from django.middleware.csrf import get_token
 from rest_framework.decorators import api_view
 
@@ -15,9 +20,10 @@ from antrian.models import Pasien, DataPasien, NoAntrian
 
 from rest_framework.permissions import (IsAuthenticated,)
 	
-
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authentication import SessionAuthentication
+
+PATH_MODEL = "pttp/model/"
 
 # Create your views here.
 def index(request):
@@ -100,13 +106,17 @@ def addnoantrian(request):
     if request.method == "POST":
         no_telp_data = request.data["no_telp"]
         jenis_pengobatan_data = request.data["jenis_pengobatan"]
-        dataPasien = DataPasien.objects.get(no_telp=no_telp_data)
+        dataPasien  = DataPasien.objects.get(no_telp=no_telp_data)
+        durasi      = getPredict(dataPasien, jenis_pengobatan_data)
+        print(no_telp_data)
+        print(jenis_pengobatan_data)
         data = {
             'no':4,
-            'durasi':15,
+            'durasi': durasi,
             'data_pasien':dataPasien,
             'status':'uncall',
             'pemanggil':'',
+            'jenis_pengobatan':jenis_pengobatan_data,
         }
         NoAntrian.objects.bulk_create([NoAntrian(**data)])
         noAntrian = NoAntrian.objects.get(data_pasien=dataPasien, status="uncall")
@@ -178,3 +188,54 @@ def getStatus(request):
                 
                 return JsonResponse(data , safe=False)
 
+def getPredict(dataPasien, jenis_pengobatan):
+    rfc = joblib.load(PATH_MODEL+"random_forest_model.joblib")
+    bins = joblib.load(PATH_MODEL+"bins.joblib")
+    time = datetime.datetime.now().time().isoformat(timespec='seconds')
+    umur = getAge(dataPasien.tempat_tgl_lahir)
+    from Random_Forest.views import getNamaDokter
+    nama_dokter = getNamaDokter(jenis_pengobatan)
+    a={(dataPasien.jenis_kelamin,
+        umur,
+        nama_dokter,
+        jenis_pengobatan,
+        time,
+        '10:15:29',
+        int(0),
+        )} #29
+    a = pd.DataFrame(a)
+    a.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+    df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
+    df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
+    temp = df1
+    # print(a['waktu_mulai'])
+    b = a.append(temp)
+    b['waktu_mulai'] = pd.to_datetime(b['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+    b['umur'] = pd.cut(np.array(b['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
+    # print(b.dtypes)
+    categorical_feature_mask = b.dtypes==object
+    
+    categorical_cols = b.columns[categorical_feature_mask].tolist()
+    # print(categorical_cols)
+    # b[categorical_cols] = le.fit_transform(b[categorical_cols])
+    # print(b[categorical_cols].dtypes)
+    le = LabelEncoder()
+    b[categorical_cols] = b[categorical_cols].apply(lambda col: le.fit_transform(col.astype(str)))
+    b= b.drop('durasi_pengobatan', axis = 1)
+    b= b.drop('waktu_berakhir', axis = 1)
+    # print(b.dtypes)
+    hasil_array = rfc.predict(b.head(1))
+    # print(bins[hasil+1])
+    hasil = int(bins[hasil_array+1])
+    menit = int(hasil/60)
+    detik = int(hasil%60)
+    return menit
+
+def getAge(date_birthday):
+    today = datetime.date.today()
+    birthday = datetime.datetime.strptime(date_birthday, "%d-%m-%Y").date()
+    if today.month > birthday.month:
+        age = int(today.year-birthday.year)
+    elif today.month < birthday.month:
+        age = int((today.year-birthday.year)-1)
+    return age

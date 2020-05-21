@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from antrian.models import NoAntrian
+from antrian.models import NoAntrian, Pasien
+from django.utils.formats import dateformat
+import datetime
 
 def index(request):
     context = {
@@ -14,8 +16,11 @@ def index(request):
         if noantrian.status == "uncall":
             noantrian.status = "call"
             noantrian.pemanggil = id
+            setDataSet(noantrian)
+
         elif noantrian.status == "call":
             noantrian.status = "called"
+            setWaktuBerakhir(noantrian)
         noantrian.save()
         return redirect('index')
     if request.user.is_authenticated():
@@ -70,3 +75,40 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+def setDataSet(noAntrian):
+    nama_dokter = getNamaDokter(noAntrian.jenis_pengobatan)
+    data = {
+        'nama_pasien'       : noAntrian.data_pasien.nama_pasien,
+        'jenis_kelamin'     : noAntrian.data_pasien.jenis_kelamin,
+        'umur'              : 0,
+        'nama_dokter'       : nama_dokter,
+        'jenis_pengobatan'  : noAntrian.jenis_pengobatan,
+        'waktu_mulai'       : dateformat.format(datetime.datetime.now(), 'H:i:s'),
+        'waktu_berakhir'    : "",
+        'durasi_pengobatan' : 0,
+        'no_antrian'        : noAntrian
+    }
+    Pasien.objects.bulk_create([Pasien(**data)])
+    
+
+
+def getNamaDokter(jenis_pengobatan):
+    if jenis_pengobatan == "Penyakit dalam":
+        return "Dr Wahyu H"
+    elif jenis_pengobatan == "spesialis saraf":
+        return "Dr Eny S"
+    elif jenis_pengobatan == "klinik bedah":
+        return "m lutfi"
+
+def setWaktuBerakhir(noAntrian):
+    pasien_update = Pasien.objects.get(no_antrian=noAntrian, waktu_berakhir="")
+    pasien_update.waktu_berakhir = dateformat.format(datetime.datetime.now() , 'H:i:s')
+    time1 = datetime.datetime.strptime(pasien_update.waktu_mulai, '%H:%M:%S')
+    time2 = datetime.datetime.strptime(pasien_update.waktu_berakhir, '%H:%M:%S')
+    durasi = time2-time1
+    d = int(durasi.total_seconds())
+    pasien_update.durasi_pengobatan = d
+    print(pasien_update)
+    pasien_update.save()

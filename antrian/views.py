@@ -26,7 +26,7 @@ def index(request):
             'jenis_pengobatan_input'    : '',
         })
     for pas in pasien:
-        pas.durasi_pengobatan = int(pas.durasi_pengobatan/60)
+        pas.durasi_pengobatan = int(pas.durasi_pengobatan)
     context.update({
         'pasien':pasien,
         'jp'    : jp
