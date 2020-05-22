@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
+from django.utils import timezone
 import joblib
 import datetime
 import pandas as pd
@@ -108,17 +109,16 @@ def addnoantrian(request):
         jenis_pengobatan_data = request.data["jenis_pengobatan"]
         dataPasien  = DataPasien.objects.get(no_telp=no_telp_data)
         durasi      = getPredict(dataPasien, jenis_pengobatan_data)
-        print(no_telp_data)
-        print(jenis_pengobatan_data)
+        no          = getNoAntrian()
         data = {
-            'no':4,
-            'durasi': durasi,
+            'no'        :no,
+            'durasi'    : durasi,
             'data_pasien':dataPasien,
-            'status':'uncall',
-            'pemanggil':'',
+            'status'    :'uncall',
+            'pemanggil' :'',
             'jenis_pengobatan':jenis_pengobatan_data,
         }
-        NoAntrian.objects.bulk_create([NoAntrian(**data)])
+        # NoAntrian.objects.bulk_create([NoAntrian(**data)])
         noAntrian = NoAntrian.objects.get(data_pasien=dataPasien, status="uncall")
         noAntrian1 = noAntrianSerializers(instance=data)
         return JsonResponse(noAntrian1.data, safe=False)
@@ -239,3 +239,13 @@ def getAge(date_birthday):
     elif today.month < birthday.month:
         age = int((today.year-birthday.year)-1)
     return age
+
+def getNoAntrian():
+    antrian = NoAntrian.objects.all().order_by('-created_at')
+    tgl_skr = datetime.date.today()
+    tgl_db  = timezone.localtime(antrian[0].created_at)
+    if tgl_db.date() == tgl_skr:
+        no = antrian[0].no+1
+    else :
+        no = 1
+    return no

@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from antrian.models import NoAntrian, Pasien
 from django.utils.formats import dateformat
 import datetime
+from django.utils import timezone
 
 def index(request):
     context = {
@@ -76,7 +77,6 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
 def setDataSet(noAntrian):
     nama_dokter = getNamaDokter(noAntrian.jenis_pengobatan)
     data = {
@@ -91,8 +91,6 @@ def setDataSet(noAntrian):
         'no_antrian'        : noAntrian,
     }
     Pasien.objects.bulk_create([Pasien(**data)])
-    
-
 
 def getNamaDokter(jenis_pengobatan):
     if jenis_pengobatan == "Penyakit dalam":
