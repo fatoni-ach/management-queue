@@ -248,4 +248,4 @@ def getNoAntrian():
         no = antrian[0].no+1
     else :
         no = 1
-    return no
+    return int(no)

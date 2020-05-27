@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from antrian.models import NoAntrian, Pasien
+from antrian.models import NoAntrian, Pasien, DataPasien
 from django.utils.formats import dateformat
 import datetime
 from django.utils import timezone
@@ -78,11 +78,14 @@ def logout_view(request):
     return redirect('login')
 
 def setDataSet(noAntrian):
+    from api.views import getAge
+    dataPasien  = DataPasien.objects.get(id = noAntrian.data_pasien.id)
+    umur        = getAge(dataPasien.tempat_tgl_lahir)
     nama_dokter = getNamaDokter(noAntrian.jenis_pengobatan)
     data = {
         'nama_pasien'       : noAntrian.data_pasien.nama_pasien,
         'jenis_kelamin'     : noAntrian.data_pasien.jenis_kelamin,
-        'umur'              : 0,
+        'umur'              : umur,
         'nama_dokter'       : nama_dokter,
         'jenis_pengobatan'  : noAntrian.jenis_pengobatan,
         'waktu_mulai'       : dateformat.format(datetime.datetime.now(), 'H:i:s'),
