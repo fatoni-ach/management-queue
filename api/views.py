@@ -118,7 +118,7 @@ def addnoantrian(request):
             'pemanggil' :'',
             'jenis_pengobatan':jenis_pengobatan_data,
         }
-        # NoAntrian.objects.bulk_create([NoAntrian(**data)])
+        NoAntrian.objects.bulk_create([NoAntrian(**data)])
         noAntrian = NoAntrian.objects.get(data_pasien=dataPasien, status="uncall")
         noAntrian1 = noAntrianSerializers(instance=data)
         return JsonResponse(noAntrian1.data, safe=False)
