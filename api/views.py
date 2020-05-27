@@ -127,7 +127,7 @@ def addnoantrian(request):
 def getStatus(request):
     if request.method == "POST":
         if request.POST["action"] == "umum":
-            noAntrian = NoAntrian.objects.all().order_by('-created_at')
+            noAntrian = NoAntrian.objects.filter(status="uncall").order_by('-created_at')
             no = getNoAntrian()
             waktu_tunggu = 0
             for i in noAntrian:
