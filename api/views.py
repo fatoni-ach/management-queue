@@ -130,7 +130,8 @@ def getStatus(request):
     if request.method == "POST":
         if request.POST["action"] == "umum":
             jenis_pengobatan = request.POST["jenis_pengobatan"]
-            noAntrian = NoAntrian.objects.filter(status="uncall").order_by('-created_at')
+            noAntrian = NoAntrian.objects.filter(status="uncall",
+                        jenis_pengobatan=jenis_pengobatan).order_by('-created_at')
             no = getNoAntrian(jenis_pengobatan)
             waktu_tunggu = 0
             for i in noAntrian:
