@@ -72,6 +72,51 @@ def login_view(request):
             return redirect('login')
     return render(request, "login.html", context)
 
+def poli(request, jenis_pengobatan):
+    context = {
+        'title':'Home',
+        'body_judul':'No antrian',
+    }
+    id = str(request.user)
+    if request.method == "POST":
+        noantrian = NoAntrian.objects.get(id = request.POST['no_sekarang'])
+        if noantrian.status == "uncall":
+            noantrian.status = "call"
+            noantrian.pemanggil = id
+            setDataSet(noantrian)
+
+        elif noantrian.status == "call":
+            noantrian.status = "called"
+            setWaktuBerakhir(noantrian)
+        noantrian.save()
+        poli = '/poli/'+jenis_pengobatan
+        return redirect(poli)
+    if request.user.is_authenticated():
+        antrian1 = NoAntrian.objects.all().exclude(status="called").order_by('no')
+        # antrian = NoAntrian.objects.all()
+        jenis_pengobatan_input = getJenisPengobatan(jenis_pengobatan)
+        antrian = antrian1.filter(jenis_pengobatan = jenis_pengobatan_input)
+        antrian_cek = antrian.filter(pemanggil = request.user)
+        if antrian_cek.exists() : 
+            no_sekarang = antrian_cek[0]
+            antrian = antrian.exclude(no = no_sekarang.no)
+        elif antrian.exists() :
+            no_sekarang = antrian[0]
+            antrian = antrian.exclude(no = no_sekarang.no)
+        else : 
+            no_sekarang = {
+                'no':0,
+                'status':''
+            }
+        context.update({
+            'antrian':antrian,
+            'no_sekarang':no_sekarang,
+            'jenis_pengobatan': jenis_pengobatan_input,
+        })
+        return render(request, "index.html", context)
+    else :
+        return redirect('login')
+
 @login_required
 def logout_view(request):
     logout(request)
@@ -113,3 +158,11 @@ def setWaktuBerakhir(noAntrian):
     pasien_update.durasi_pengobatan = d
     print(pasien_update)
     pasien_update.save()
+
+def getJenisPengobatan(jenis_pengobatan):
+    if jenis_pengobatan=="klinik_bedah":
+        return "klinik bedah"
+    elif jenis_pengobatan=="spesialis_saraf":
+        return "spesialis saraf"
+    elif jenis_pengobatan=="penyakit_dalam":
+        return "Penyakit dalam"

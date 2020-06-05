@@ -12,12 +12,57 @@
 
 {% block body %}
 <div class="row justify-content-center">
-<div class="col-7">
+<div class="col-xl-6 col-lg-6">
 <div class="card shadow">
     <div class="card-header">
+        <!-- <div class="row">
+            <h6 class="font-weight-bold text-primary col-6">No Antrian :</h6>
+            <div class="col-sm-6 col-md-6 ">
+                <div class="dataTables_length col-12" id="dataTable_length">
+                  <div class="row">
+                    <nav class="navbar navbar-expand navbar-light bg-light">
+                        <label class="mr-2 mt-2" for="dataTable_length">Poli : </label>
+                        <ul class="navbar-nav ml-auto">
+                          <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              {{jenis_pengobatan}}
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right animated--grow-in" aria-labelledby="navbarDropdown">
+                              <a class="dropdown-item" href="{% url "poli" jenis_pengobatan="klinik_bedah" %}">klinik bedah</a>
+                              <a class="dropdown-item" href="{% url "poli" jenis_pengobatan="spesialis_saraf" %}">spesialis saraf</a>
+                              <a class="dropdown-item" href="{% url "poli" jenis_pengobatan="penyakit_dalam" %}">penyakit dalam</a>
+                          </li>
+                        </ul>
+                      </nav>
+                  </div>
+                </div>
+            </div>
+        </div> -->
         <div class="row">
-            <h6 class="m-0 font-weight-bold text-primary">No Antrian :</h6>
-        </div>
+            <div class="col-xl-5 col-lg-5">
+            <h6 class="mt-3 font-weight-bold text-primary">No Antrian </h6>
+            </div>
+            <div class="col-xl-7 col-lg-7">
+                <div class="dataTables_length col-12" id="dataTable_length">
+                  <div class="row">
+                  <nav class="navbar navbar-expand navbar-light bg-light mr-1">
+                    <label class="mr-2 mt-2 text-info font-weight-bold" for="dataTable_length">POLI : </label>
+                    <ul class="navbar-nav ml-auto">
+                      <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          {{jenis_pengobatan}}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right animated--grow-in" aria-labelledby="navbarDropdown">
+                          <a class="dropdown-item" href="{% url "poli" jenis_pengobatan="klinik_bedah" %}">klinik bedah</a>
+                          <a class="dropdown-item" href="{% url "poli" jenis_pengobatan="spesialis_saraf" %}">spesialis saraf</a>
+                          <a class="dropdown-item" href="{% url "poli" jenis_pengobatan="penyakit_dalam" %}">penyakit dalam</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            </div>
     </div>
     <div class="card-body" align="center">
         {% if no_sekarang.status == "uncall" %}
@@ -25,7 +70,10 @@
         <hr class="py-0">   
         {% elif no_sekarang.status == "call" %}
         <h1 class="m-2 font-weight-bold text-danger">{{no_sekarang.no}}</h1> 
-        <hr class="py-0">   
+        <hr class="py-0">  
+        {% else %}
+        <h1 class="m-2 font-weight-bold text-primary">{{no_sekarang.no}}</h1> 
+        <hr class="py-0">  
         {% endif %}
         {% if no_sekarang.status == "uncall" %}
         <form action="" method="post">
@@ -36,6 +84,7 @@
         <form action="" method="post">
             {% csrf_token %}
             <button type="submit" name="no_sekarang" value={{no_sekarang.id}} class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">Selesai</button>
+            <p>klik tombol selesai ketika pasien sudah dilayani</p> 
         </form>
         {% endif %}
         <div class="table-responsive mt-3">

@@ -109,7 +109,7 @@ def addnoantrian(request):
         jenis_pengobatan_data = request.data["jenis_pengobatan"]
         dataPasien  = DataPasien.objects.get(no_telp=no_telp_data)
         durasi      = getPredict(dataPasien, jenis_pengobatan_data)
-        no          = getNoAntrian()
+        no          = getNoAntrian(jenis_pengobatan_data)
         data = {
             'no'        :no,
             'durasi'    : durasi,
@@ -119,7 +119,9 @@ def addnoantrian(request):
             'jenis_pengobatan':jenis_pengobatan_data,
         }
         NoAntrian.objects.bulk_create([NoAntrian(**data)])
-        noAntrian = NoAntrian.objects.get(data_pasien=dataPasien, status="uncall")
+        noAntrian = NoAntrian.objects.get(data_pasien=dataPasien, 
+                                        status="uncall", 
+                                        jenis_pengobatan=jenis_pengobatan_data)
         noAntrian1 = noAntrianSerializers(instance=data)
         return JsonResponse(noAntrian1.data, safe=False)
 
@@ -127,8 +129,9 @@ def addnoantrian(request):
 def getStatus(request):
     if request.method == "POST":
         if request.POST["action"] == "umum":
+            jenis_pengobatan = request.POST["jenis_pengobatan"]
             noAntrian = NoAntrian.objects.filter(status="uncall").order_by('-created_at')
-            no = getNoAntrian()
+            no = getNoAntrian(jenis_pengobatan)
             waktu_tunggu = 0
             for i in noAntrian:
                 waktu_tunggu = waktu_tunggu+i.durasi
@@ -149,7 +152,9 @@ def getStatus(request):
         elif request.POST["action"] == "private":
             no_telp = request.POST['no_telp']
             status = request.POST['status']
-            noAntrian = NoAntrian.objects.filter(status="uncall").order_by('created_at')
+            jenis_pengobatan_input = request.POST['jenis_pengobatan']
+            noAntrian = NoAntrian.objects.filter(status="uncall",
+                        jenis_pengobatan=jenis_pengobatan_input).order_by('created_at')
             no = 0
             waktu_tunggu = 0
             jumlah_antrian = 0
@@ -240,12 +245,23 @@ def getAge(date_birthday):
         age = int((today.year-birthday.year)-1)
     return age
 
-def getNoAntrian():
+def getNoAntrian(jenis_pengobatan_input):
     antrian = NoAntrian.objects.all().order_by('-created_at')
-    tgl_skr = datetime.date.today()
-    tgl_db  = timezone.localtime(antrian[0].created_at)
-    if tgl_db.date() == tgl_skr:
-        no = antrian[0].no+1
-    else :
+
+    antrian1 = antrian.filter(jenis_pengobatan = jenis_pengobatan_input)
+
+    if antrian1.count() > 0 :
+        antrian = antrian1    
+    
+        for i in antrian:
+            print(i.data_pasien)
+
+        tgl_skr = datetime.date.today()
+        tgl_db  = timezone.localtime(antrian[0].created_at)
+        if tgl_db.date() == tgl_skr:
+            no = antrian[0].no+1
+        else :
+            no = 1
+    else:
         no = 1
     return int(no)
