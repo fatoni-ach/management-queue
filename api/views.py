@@ -251,18 +251,19 @@ def getNoAntrian(jenis_pengobatan_input):
 
     antrian1 = antrian.filter(jenis_pengobatan = jenis_pengobatan_input)
 
-    if antrian1.count() > 0 :
-        antrian = antrian1    
+    # if antrian1.count() > 0 :
+    #     antrian = antrian1    
     
-        for i in antrian:
-            print(i.data_pasien)
+    #     for i in antrian:
+    #         print(i.data_pasien)
 
-        tgl_skr = datetime.date.today()
-        tgl_db  = timezone.localtime(antrian[0].created_at)
-        if tgl_db.date() == tgl_skr:
-            no = antrian[0].no+1
-        else :
-            no = 1
-    else:
-        no = 1
+    #     tgl_skr = datetime.date.today()
+    #     tgl_db  = timezone.localtime(antrian[0].created_at)
+    #     if tgl_db.date() == tgl_skr:
+    #         no = antrian[0].no+1
+    #     else :
+    #         no = 1
+    # else:
+    #     no = 1
+    no = antrian[0].no+1
     return int(no)
