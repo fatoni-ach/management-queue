@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils import dateformat
 from django.http import HttpResponse, QueryDict
 from antrian.models import Pasien
-from .forms import TestingForms, TempForms
+from .forms import TestingForms, TempForms, inputCsvForm
+from django.contrib import messages
 import csv
 import pandas as pd
 import time
@@ -14,19 +15,38 @@ from sklearn import metrics
 import joblib
 from sklearn.preprocessing import LabelEncoder
 
-N = 500
+N = 1000
 RandomState = 0
-TestSize = 0.30
+TestSize = 0.25
 PATH_MODEL = "pttp/model/"
 
 # Create your views here.
 @login_required
 def index(request):
+    csv_form = inputCsvForm()
     context = {
         'title':'Training Data',
         'body_judul':'Training Data Menggunakan Algoritma Random Forest',
+        'csv_form'  : csv_form,
     }
-
+    try : 
+        hasil_training = joblib.load(PATH_MODEL+"hasil_training.joblib")
+    except :
+        hasil_training = None
+    if hasil_training != None:
+        context.update(hasil_training)
+    if request.method=="POST":
+        csv_file = request.FILES['file_input']
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'MASUKKAN FILE DENGAN FORMAT CSV')
+            return render(request, "pttp/index.html", context)
+        data = pd.read_csv(csv_file)
+        if all([item in data.columns for item in ['jenis_kelamin','umur', 'nama_dokter',
+                                'durasi_pengobatan','jenis_pengobatan', 'waktu_mulai']]):
+            training(data, context)
+            print("LENGKAP")
+        else:
+            messages.error(request, 'FORMAT DATASET ANDA TIDAK VALID')
     return render(request, "pttp/index.html", context)
 
 @login_required
@@ -107,6 +127,16 @@ def database(request, tipe):
             'txt_presisi'   : 'recal score : '+rs,
             'txt_recall'    : 'F measure   : '+fs,
         })
+        hasil_training = {
+            'tipe'          : 'Random Forest Classifier',
+            'txt_akurasi'   : 'Akurasi Algoritma : ',
+            'akurasi'       : akurasi+ '%',
+            'txt_ab_error'  : 'Presisi Score : ',
+            'ab_error'      : ps+' degrees',
+            'txt_presisi'   : 'recal score : '+rs,
+            'txt_recall'    : 'F measure   : '+fs,
+        }
+        joblib.dump(hasil_training, PATH_MODEL+"hasil_training.joblib", compress=True)
     elif tipe == 'regressor':
         df1 = pd.DataFrame(list(Pasien.objects.all().values_list('jenis_kelamin', 'umur', 'nama_dokter', 'jenis_pengobatan','waktu_mulai', 'waktu_berakhir', 'durasi_pengobatan')))
         df1.columns = ["jenis_kelamin", "umur", "nama_dokter", "jenis_pengobatan","waktu_mulai", "waktu_berakhir", "durasi_pengobatan"]
@@ -527,3 +557,77 @@ def testing(request):
         #         })
     
     return render(request, 'pttp/testing.html', context)
+
+def training(df, context):
+    df['waktu_mulai'] = pd.to_datetime(df['waktu_mulai'], format='%H:%M:%S').dt.hour.astype('int64')
+    df['umur'] = pd.cut(np.array(df['umur']), [0,12,26,45,100],labels=[0, 1, 2, 3], include_lowest=False).astype('int64')
+    durasi, bins = pd.cut(np.array(df['durasi_pengobatan']),
+            [0, 300, 900, 1500, 2100, 2700],include_lowest=False,labels=[0 , 1, 2, 3, 4] ,
+                retbins=True)
+    df['durasi_pengobatan']= durasi.astype('int64')
+    # print(df)
+
+    categorical_feature_mask = df.dtypes==object
+    categorical_cols = df.columns[categorical_feature_mask].tolist()
+    from sklearn.preprocessing import LabelEncoder
+    le = LabelEncoder()
+    # print(df.dtypes)
+    df[categorical_cols] = df[categorical_cols].apply(lambda col: le.fit_transform(col))
+    features = df
+    # print(features.dtypes)
+
+    labels = np.array(features['durasi_pengobatan'])
+    features= features.drop('durasi_pengobatan', axis = 1)
+    # print(features.dtypes)
+    feature_list = list(features.columns)
+    features = np.array(features)
+
+    from sklearn.model_selection import train_test_split
+    train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = TestSize, random_state = RandomState)
+
+    from sklearn.ensemble import RandomForestClassifier
+    rfc = RandomForestClassifier(n_estimators=N, random_state=RandomState)
+    rfc.fit(train_features, train_labels)
+    pred_labels = rfc.predict(test_features)
+    akurasi = str((rfc.score(test_features, test_labels)) *100)
+    # print(type(accuracy))
+
+    predictions = rfc.predict(test_features)
+    errors = abs(predictions - test_labels)
+    # print('Mean Absolute Error:', round(np.mean(errors), 2), 'degrees.')
+    ab_error = str(round(np.mean(errors), 2))
+    test_pred=rfc.predict(test_features)
+
+    from sklearn.metrics import f1_score
+    from sklearn.metrics import precision_score
+    from sklearn.metrics import recall_score
+
+    score = str(rfc.score(test_features,test_labels))
+    ps = str(precision_score(test_labels, test_pred, average='macro'))
+    rs = str(recall_score(test_labels, test_pred, average='macro'))
+    fs = str(f1_score(test_labels, test_pred, average='macro'))
+
+    joblib.dump(rfc, PATH_MODEL+"random_forest_model.joblib", compress=True)
+    joblib.dump(bins, PATH_MODEL+"bins.joblib", compress=True)
+
+    # average_precision   = str(metrics.precision_score(test_labels, pred_labels, average='weighted')*100)
+    # recall              = str(metrics.recall_score(test_labels, pred_labels, average='weighted')*100)
+    context.update({
+        'tipe'          : 'Random Forest Classifier',
+        'txt_akurasi'   : 'Akurasi Algoritma : ',
+        'akurasi'       : akurasi+ '%',
+        'txt_ab_error'  : 'Presisi Score : ',
+        'ab_error'      : ps+' degrees',
+        'txt_presisi'   : 'recal score : '+rs,
+        'txt_recall'    : 'F measure   : '+fs,
+    })
+    hasil_training = {
+        'tipe'          : 'Random Forest Classifier',
+        'txt_akurasi'   : 'Akurasi Algoritma : ',
+        'akurasi'       : akurasi+ '%',
+        'txt_ab_error'  : 'Presisi Score : ',
+        'ab_error'      : ps+' degrees',
+        'txt_presisi'   : 'recal score : '+rs,
+        'txt_recall'    : 'F measure   : '+fs,
+    }
+    joblib.dump(hasil_training, PATH_MODEL+"hasil_training.joblib", compress=True)

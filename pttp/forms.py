@@ -83,3 +83,8 @@ class TempForms(forms.Form):
     forecast_under    = forms.IntegerField(required = False
     )
     csv      = forms.FileField()
+
+class inputCsvForm(forms.Form):
+    file_input  = forms.FileField(
+        label = 'masukkn file csv '
+    )
