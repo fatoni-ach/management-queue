@@ -263,9 +263,8 @@ def getNoAntrian(jenis_pengobatan_input):
     #         no = antrian[0].no+1
     #     else :
     #         no = 1
-    # else:
-    #     no = 1
-    if antrian1.count() > 0 :   
+    
+    if antrian1.count() > 0 : 
         no = antrian1[0].no+1
     else:
         no = 1
