@@ -28,6 +28,7 @@
                 <th>Nama Pasien</th>
                 <th>Status</th>
                 <th>Poli</th>
+                <th>Durasi</th>
                 <th>Pemanggil</th>
                 </tr>
             </thead>
@@ -38,6 +39,7 @@
                     <td>{{data.data_pasien.nama_pasien}}</td>
                     <td>{{data.status}}</td>
                     <td>{{data.jenis_pengobatan}}</td>
+                    <td>{{data.durasi}} menit</td>
                     <td>{{data.pemanggil}}</td>
                     <!-- <td>
                         <a href="{% url 'antrian:update' data.id %}" class="btn btn-user btn-warning">Update</a>
