@@ -39,8 +39,10 @@ class NoAntrian(models.Model):
     updated_at      = models.DateTimeField(auto_now=True, blank=True)
 
     def __str__(self):
-        return "id={} |no={} |durasi{} |status = {} |pasien={} |jenis_pengobatan={}".format(
-            self.id, self.no, self.durasi, self.status, self.data_pasien.nama_pasien, self.jenis_pengobatan)
+        return "id={} |no={} |durasi{} |status = {} |pasien={} |jenis_pengobatan={} |pemanggil={} |Durasi pengobatan={}".format(
+            self.id, self.no, self.durasi, 
+            self.status, self.data_pasien.nama_pasien, self.jenis_pengobatan, 
+            self.pemanggil, self.durasi)
 
 class Pasien(models.Model):
     GENDER = (
