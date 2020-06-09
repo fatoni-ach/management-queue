@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block app_css %}
+  
+{% endblock app_css%}
+
+{% block heading %}
+    <h1 class="h3 mb-0 text-gray-800">{{body_judul}}</h1>
+    <!-- <a href="{% url 'antrian:create' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> Tambah Data </a> -->
+{% endblock heading %}
+
+{% block body %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <div class="row">
+            <h6 class="m-0 font-weight-bold text-primary col-6">Data Antrian Rumah Sakit</h6>
+            <hr>
+              
+            </div>
+        </div>
+        <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+                <tr align="center">
+                <th>No Antrian</th>
+                <th>Nama Pasien</th>
+                <th>Status</th>
+                <th>Poli</th>
+                <th>Pemanggil</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in no_antrian %}
+                <tr align="center">
+                    <td>{{data.no}}</td>
+                    <td>{{data.data_pasien.nama_pasien}}</td>
+                    <td>{{data.status}}</td>
+                    <td>{{data.jenis_pengobatan}}</td>
+                    <td>{{data.pemanggil}}</td>
+                    <!-- <td>
+                        <a href="{% url 'antrian:update' data.id %}" class="btn btn-user btn-warning">Update</a>
+                        <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            
+                              
+                              <button class="btn btn-user btn-danger">Hapus</button>
+                            </a>
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="alertsDropdown">
+                              <h6 class="dropdown-header">
+                                Yakin ingin menghapus ?
+                              </h6>
+                              <a class="dropdown-item d-flex align-items-center bg-" href="{% url 'antrian:delete' data.id %}">
+                                <div class="mr-3">
+                                </div>
+                                <div>
+                                  <div class="medium">Ya</div>
+                                </div>
+                              </a>
+                            </div>
+                          </li>
+                        </ul>
+                    </td>               -->
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+{% endblock body %}

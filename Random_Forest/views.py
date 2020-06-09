@@ -117,6 +117,15 @@ def poli(request, jenis_pengobatan):
     else :
         return redirect('login')
 
+def data_antrian(request):
+    noantrian = NoAntrian.objects.all().order_by('-created_at')
+    context = {
+        'title':'Data Antrian',
+        'body_judul':'Data Antrian',
+        'no_antrian':noantrian,
+    }
+    return render(request, "pasien.html", context)
+
 @login_required
 def logout_view(request):
     logout(request)
