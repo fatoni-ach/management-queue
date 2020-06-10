@@ -5,6 +5,7 @@ from antrian.models import NoAntrian, Pasien, DataPasien
 from django.utils.formats import dateformat
 import datetime
 from django.utils import timezone
+from django.contrib import messages
 
 def index(request):
     context = {
@@ -69,6 +70,7 @@ def login_view(request):
             login(request, user)
             return redirect('index')
         else :
+            messages.error(request, 'Username atau password tidak valid')
             return redirect('login')
     return render(request, "login.html", context)
 

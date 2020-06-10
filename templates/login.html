@@ -40,10 +40,16 @@
                   <form class="user" method="POST" >
                     {% csrf_token %}
                     <div class="form-group">
-                      <input name="username" type="text" class="form-control form-control-user" id="username" aria-describedby="emailHelp" placeholder="Enter Username...">
+                      <input required="required" name="username" type="text" class="form-control form-control-user" id="username" aria-describedby="emailHelp" placeholder="Enter Username...">
                     </div>
                     <div class="form-group">
-                      <input name="password" type="password" class="form-control form-control-user" id="password" placeholder="Password">
+                      <input required="required" name="password" type="password" class="form-control form-control-user" id="password" placeholder="Password">
+                      {% for message in messages %}
+                      <div class="text-center">
+          <!--                | means OR operator-->
+                          <p class="text-danger">{{message|safe}}</p>
+                      </div>
+                      {% endfor %}
                     </div>
                     <input class="btn btn-primary btn-user btn-block" type="submit" value="Login">
                     
