@@ -15,8 +15,8 @@ from sklearn import metrics
 import joblib
 from sklearn.preprocessing import LabelEncoder
 
-N = 1000
-RandomState = 0
+N = 100
+RandomState = 30
 TestSize = 0.25
 PATH_MODEL = "pttp/model/"
 
