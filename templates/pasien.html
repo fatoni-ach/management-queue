@@ -17,8 +17,9 @@
             <h6 class="m-0 font-weight-bold text-primary col-6">Data Antrian Rumah Sakit</h6>
             <hr>
               
-            </div>
+          </div>
         </div>
+          <!-- <a href="{% url 'download' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Download </a>       -->
         <div class="card-body">
         <div class="table-responsive">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -26,9 +27,11 @@
                 <tr align="center">
                 <th>No Antrian</th>
                 <th>Nama Pasien</th>
-                <th>Status</th>
+                <th>Jenis Kelamin</th>
                 <th>Poli</th>
+                <th>Waktu Mulai</th>
                 <th>Durasi</th>
+                <th>Status</th>
                 <th>Pemanggil</th>
                 </tr>
             </thead>
@@ -37,9 +40,15 @@
                 <tr align="center">
                     <td>{{data.no}}</td>
                     <td>{{data.data_pasien.nama_pasien}}</td>
-                    <td>{{data.status}}</td>
+                    {% if data.data_pasien.jenis_kelamin == "l" %}
+                    <td>Laki - laki</td>
+                    {% else %}
+                    <td>Perempuan</td>
+                    {% endif %}
                     <td>{{data.jenis_pengobatan}}</td>
+                    <td>{{data.created_at}}</td>
                     <td>{{data.durasi}} menit</td>
+                    <td>{{data.status}}</td>
                     <td>{{data.pemanggil}}</td>
                     <!-- <td>
                         <a href="{% url 'antrian:update' data.id %}" class="btn btn-user btn-warning">Update</a>

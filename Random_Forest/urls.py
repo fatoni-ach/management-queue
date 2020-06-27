@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^logout/$', views.logout_view , name="logout"),
     url(r'^reset/$', views.reset , name="reset"),
     url(r'^data-antrian/$', views.data_antrian , name="data_antrian"),
+    url(r'^data-antrian/download/$', views.download_data , name="download"),
     url(r'^poli/(?P<jenis_pengobatan>[\w-]+)/$', views.poli , name="poli"),
     url(r'^antrian/', include('antrian.urls', namespace="antrian")),
     url(r'^api/request/', include('api.urls', namespace="api")),

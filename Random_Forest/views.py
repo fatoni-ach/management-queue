@@ -6,6 +6,8 @@ from django.utils.formats import dateformat
 import datetime
 from django.utils import timezone
 from django.contrib import messages
+from django.http import HttpResponse
+import csv
 
 def index(request):
     context = {
@@ -150,6 +152,18 @@ def setDataSet(noAntrian):
         'no_antrian'        : noAntrian,
     }
     Pasien.objects.bulk_create([Pasien(**data)])
+
+def download_data(request):
+    noantrian = NoAntrian.objects.all().order_by('-created_at')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition']='attachment; filename="data_antrian.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['id', 'no_antrian','nama_pasien', 'status','poli', 'durasi'])
+    users = NoAntrian.objects.all().values_list('id','no','data_pasien', 'status', 'jenis_pengobatan', 'durasi')
+    for user in users:
+        writer.writerow(user)
+        print(user)
+    return response
 
 def getNamaDokter(jenis_pengobatan):
     if jenis_pengobatan == "Penyakit dalam":
