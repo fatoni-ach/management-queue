@@ -141,13 +141,16 @@ def getStatus(request):
             minutes = str(waktu_tunggu%60)
             if hour!= 0 :
                 waktu_tunggu_string = str(hour)+" Jam "+minutes+" Menit" 
+                jam_dipanggil_string = str(hour+8)+" : "+minutes
             else :
                 waktu_tunggu_string = minutes+" Menit" 
+                jam_dipanggil_string = str(8)+" : "+minutes
 
             data = {
                 'no':no,
                 'waktu_tunggu':waktu_tunggu_string,
-                'jumlah_antrian':noAntrian.count()
+                'jumlah_antrian':noAntrian.count(),
+                'jam_dipanggil' : jam_dipanggil_string
             }
             return JsonResponse(data, safe=False)
         elif request.POST["action"] == "private":
@@ -175,7 +178,8 @@ def getStatus(request):
                 data = {
                     'no':0,
                     'waktu_tunggu':"null",
-                    'jumlah_antrian':0
+                    'jumlah_antrian':0,
+                    'jam_dipanggil': "8 : 00",
                 }
                 return JsonResponse(data , safe=False)
             else:
@@ -183,13 +187,16 @@ def getStatus(request):
                 minutes = str(waktu_tunggu%60)
                 if hour!= 0 :
                     waktu_tunggu_string = str(hour)+" Jam "+minutes+" Menit" 
+                    jam_dipanggil_string = str(hour+8)+" : "+minutes
                 else :
                     waktu_tunggu_string = minutes+" Menit" 
+                    jam_dipanggil_string = str(8)+" : "+minutes
         
                 data = {
                     'no':no,
                     'waktu_tunggu':waktu_tunggu_string,
-                    'jumlah_antrian':jumlah_antrian
+                    'jumlah_antrian':jumlah_antrian,
+                    'jam_dipanggil':jam_dipanggil_string,
                 }
                 
                 return JsonResponse(data , safe=False)
