@@ -201,6 +201,29 @@ def getStatus(request):
                 
                 return JsonResponse(data , safe=False)
 
+@api_view(['POST'])
+def getDokterShift(request):
+    if request.method == "POST":
+        jenis_pengobatan_input = request.POST['jenis_pengobatan']
+        noAntrian = NoAntrian.objects.filter(status="uncall",
+                        jenis_pengobatan=jenis_pengobatan_input).order_by('created_at')
+        no = 0
+        waktu_tunggu = 0
+        jumlah_antrian = 0
+        status = False
+        pasien = ""
+        for i in noAntrian:
+            waktu_tunggu = waktu_tunggu+i.durasi
+
+        print(waktu_tunggu)
+        hour    = int(waktu_tunggu/60)
+        minutes = str(waktu_tunggu%60)
+        if hour+8 < 16:
+            status = "Dokter Shift Pagi"
+        else :
+            status = "Dokter Shift Malam"
+        return JsonResponse(status, safe=False)
+
 def getPredict(dataPasien, jenis_pengobatan):
     rfc = joblib.load(PATH_MODEL+"random_forest_model.joblib")
     bins = joblib.load(PATH_MODEL+"bins.joblib")
