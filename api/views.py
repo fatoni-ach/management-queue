@@ -219,10 +219,12 @@ def getDokterShift(request):
         hour    = int(waktu_tunggu/60)
         minutes = str(waktu_tunggu%60)
         if hour+8 < 16:
-            status = "Dokter Shift Pagi"
+            status = "pagi"
         else :
-            status = "Dokter Shift Malam"
-        return JsonResponse(status, safe=False)
+            status = "malam"
+        nama_dokter = getNamaDokter2(jenis_pengobatan_input, status)
+        nama_dokter = "Dokter shift "+status+" : "+nama_dokter
+        return JsonResponse(nama_dokter, safe=False)
 
 def getPredict(dataPasien, jenis_pengobatan):
     rfc = joblib.load(PATH_MODEL+"random_forest_model.joblib")
@@ -299,3 +301,23 @@ def getNoAntrian(jenis_pengobatan_input):
     else:
         no = 1
     return int(no)
+
+def getNamaDokter2(jenis_pengobatan_input, status):
+    nama_dokter = ""
+    if (jenis_pengobatan_input == "klinik bedah"):
+        if status == "pagi":
+            nama_dokter = "Dr Ali"
+        elif status == "malam":
+            nama_dokter = "Dr Herman"
+    elif (jenis_pengobatan_input == "Penyakit dalam"):
+        if status == "pagi":
+            nama_dokter = "Dr Amalia"
+        elif status == "malam":
+            nama_dokter = "Dr Hanafi"
+    elif (jenis_pengobatan_input == "spesialis saraf"):
+        if status == "pagi":
+            nama_dokter = "Dr Sutrisno"
+        elif status == "malam":
+            nama_dokter = "Dr Munawaroh"
+
+    return str(nama_dokter)
